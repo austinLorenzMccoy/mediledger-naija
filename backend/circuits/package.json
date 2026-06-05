@@ -1,0 +1,31 @@
+{
+  "name": "mediledger-circuits",
+  "version": "1.0.0",
+  "description": "Circom 2 ZK circuits for MediLedger Nigeria vault integrity proofs",
+  "private": true,
+  "scripts": {
+    "setup": "bash scripts/setup-circuits.sh",
+    "download-ptau": "bash scripts/download-ptau.sh",
+    "compile:vault": "circom vault_integrity.circom --r1cs --wasm --sym -o build/",
+    "compile:condition": "circom condition_proof.circom --r1cs --wasm --sym -o build/",
+    "compile:consent": "circom consent_scope.circom --r1cs --wasm --sym -o build/",
+    "compile:all": "npm run compile:vault && npm run compile:condition && npm run compile:consent",
+    "info:vault": "snarkjs r1cs info build/vault_integrity.r1cs",
+    "info:condition": "snarkjs r1cs info build/condition_proof.r1cs",
+    "info:consent": "snarkjs r1cs info build/consent_scope.r1cs",
+    "test": "mocha test/*.spec.ts --require ts-node/register --timeout 120000"
+  },
+  "dependencies": {
+    "circomlib": "^2.0.5",
+    "snarkjs": "^0.7.4",
+    "circomlibjs": "^0.1.7"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.0",
+    "@types/node": "^20.0.0",
+    "circom_tester": "^0.0.19",
+    "mocha": "^10.0.0",
+    "ts-node": "^10.0.0",
+    "typescript": "^5.0.0"
+  }
+}

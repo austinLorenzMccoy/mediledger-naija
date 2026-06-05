@@ -1,0 +1,167 @@
+version: '3.9'
+
+# MediLedger Nigeria — Backend Services
+# NestJS microservices that complement Supabase (Hedera SDK + Redis workloads)
+# Supabase itself is run separately via: cd supabase/docker && docker compose up -d
+
+services:
+
+  # ── Redis (USSD sessions + emergency hot cache) ──────────────────────
+  redis:
+    image: redis:7.2-alpine
+    container_name: mediledger-redis
+    ports:
+      - "6379:6379"
+    command: >
+      redis-server
+      --requirepass ${REDIS_PASSWORD:-}
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # ── API Gateway (port 3000) ───────────────────────────────────────────
+  api-gateway:
+    build:
+      context: ./services/api-gateway
+      dockerfile: Dockerfile
+    container_name: mediledger-api-gateway
+    ports:
+      - "3000:3000"
+    env_file: .env
+    environment:
+      - AUTH_SERVICE_URL=http://auth-service:3001
+      - CLAIMS_SERVICE_URL=http://claims-service:3004
+      - REDIS_HOST=redis
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ── Auth Service (port 3001) ──────────────────────────────────────────
+  auth-service:
+    build:
+      context: ./services/auth-service
+      dockerfile: Dockerfile
+    container_name: mediledger-auth-service
+    ports:
+      - "3001:3001"
+    env_file: .env
+    environment:
+      - REDIS_HOST=redis
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ── Claims Service (port 3004) ────────────────────────────────────────
+  claims-service:
+    build:
+      context: ./services/claims-service
+      dockerfile: Dockerfile
+    container_name: mediledger-claims-service
+    ports:
+      - "3004:3004"
+    env_file: .env
+    restart: unless-stopped
+
+  # ── Token Service (port 3006) ─────────────────────────────────────────
+  token-service:
+    build:
+      context: ./services/token-service
+      dockerfile: Dockerfile
+    container_name: mediledger-token-service
+    ports:
+      - "3006:3006"
+    env_file: .env
+    restart: unless-stopped
+
+  # ── Emergency Service (port 3011) ─────────────────────────────────────
+  emergency-service:
+    build:
+      context: ./services/emergency-service
+      dockerfile: Dockerfile
+    container_name: mediledger-emergency-service
+    ports:
+      - "3011:3011"
+    env_file: .env
+    environment:
+      - REDIS_HOST=redis
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ── ZK Vault Service (port 3012) — NestJS + snarkjs ─────────────────
+  zk-vault-service:
+    build:
+      context: ./services/zk-vault
+      dockerfile: Dockerfile
+    container_name: mediledger-zk-vault
+    ports:
+      - "3012:3012"
+    env_file: .env
+    environment:
+      - REDIS_HOST=redis
+      # circuits/keys and circuits/build are mounted so snarkjs can find .zkey + .wasm
+      - CIRCUITS_DIR=/circuits
+    volumes:
+      - ./circuits/keys:/circuits/keys:ro
+      - ./circuits/build:/circuits/build:ro
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3012/api/v1/zk/health"]
+      interval: 30s
+      timeout: 5s
+      start_period: 30s
+      retries: 3
+    restart: unless-stopped
+
+  # ── AI Service (port 3008) — Python FastAPI + uv ──────────────────────
+  ai-service:
+    build:
+      context: ./services/ai-service
+      dockerfile: Dockerfile
+    container_name: mediledger-ai-service
+    ports:
+      - "3008:3008"
+    env_file: .env
+    environment:
+      - REDIS_HOST=redis
+      - MODEL_WEIGHTS_PATH=/app/weights/model_v1.npy
+      - MODEL_VERSION=${AI_MODEL_VERSION:-v1.0.0}
+      - ALLOWED_ORIGIN=http://api-gateway:3000
+      - ZK_VAULT_SERVICE_URL=http://zk-vault-service:3012
+    volumes:
+      # Mount model weights from host (updated after each federated round)
+      - ai_weights:/app/weights
+      # Mount hospital feature cache (populated by local FHIR extractor)
+      - hospital_features:/tmp/mediledger_features
+    depends_on:
+      redis:
+        condition: service_healthy
+      zk-vault-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:3008/health')"]
+      interval: 30s
+      timeout: 10s
+      start_period: 90s
+      retries: 3
+    restart: unless-stopped
+
+volumes:
+  redis_data:
+  ai_weights:
+  hospital_features:
+
+networks:
+  default:
+    name: mediledger-network

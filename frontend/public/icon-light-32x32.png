@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120" role="img" aria-label="MediLedger Nigeria Icon">
+  <defs>
+    <linearGradient id="sg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4EC99A"/>
+      <stop offset="100%" stop-color="#2A8C68"/>
+    </linearGradient>
+    <linearGradient id="tg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E8754A"/>
+      <stop offset="100%" stop-color="#C9572A"/>
+    </linearGradient>
+    <linearGradient id="gg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F0C96B"/>
+      <stop offset="100%" stop-color="#D4A843"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2.5" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background rounded square -->
+  <rect width="120" height="120" rx="24" fill="#0A1E14"/>
+
+  <!-- Adire background pattern -->
+  <g opacity="0.08" stroke="#4EC99A" stroke-width="0.7" fill="none">
+    <path d="M60 4 L116 60 L60 116 L4 60 Z"/>
+    <path d="M60 16 L104 60 L60 104 L16 60 Z"/>
+  </g>
+
+  <!-- Main Adire shield diamond -->
+  <path d="M60 10 L106 56 L60 114 L14 56 Z"
+        fill="#0D2B1F"
+        stroke="url(#sg)"
+        stroke-width="2"
+        filter="url(#glow)"/>
+
+  <!-- Inner diamond rings -->
+  <path d="M60 22 L94 56 L60 98 L26 56 Z"
+        fill="none" stroke="url(#sg)" stroke-width="0.9" opacity="0.4"/>
+  <path d="M60 34 L82 56 L60 82 L38 56 Z"
+        fill="none" stroke="url(#sg)" stroke-width="0.7" opacity="0.25"/>
+
+  <!-- Corner accent dots -->
+  <circle cx="60" cy="10"  r="3.5" fill="url(#gg)" opacity="0.95"/>
+  <circle cx="106" cy="56" r="3.5" fill="url(#gg)" opacity="0.95"/>
+  <circle cx="60" cy="114" r="3.5" fill="url(#gg)" opacity="0.95"/>
+  <circle cx="14"  cy="56" r="3.5" fill="url(#gg)" opacity="0.95"/>
+
+  <!-- Medical cross -->
+  <rect x="44" y="44" width="32" height="24" rx="5" fill="url(#sg)"/>
+  <rect x="48" y="36" width="24" height="40" rx="5" fill="url(#sg)"/>
+  <!-- Cross shine -->
+  <rect x="44" y="44" width="32" height="24" rx="5" fill="none" stroke="#fff" stroke-width="0.6" opacity="0.18"/>
+  <rect x="48" y="36" width="24" height="40" rx="5" fill="none" stroke="#fff" stroke-width="0.6" opacity="0.18"/>
+
+  <!-- Terra pulse dot (top-right) -->
+  <circle cx="96" cy="28" r="7" fill="url(#tg)"/>
+  <circle cx="96" cy="28" r="11" fill="none" stroke="#E8754A" stroke-width="1.2" opacity="0.4"/>
+
+  <!-- Blockchain link nodes at bottom -->
+  <g stroke="url(#gg)" stroke-width="1.2" fill="none" stroke-linecap="round" opacity="0.65">
+    <circle cx="44" cy="96" r="3" fill="url(#gg)" stroke="none"/>
+    <circle cx="60" cy="102" r="3" fill="url(#gg)" stroke="none"/>
+    <circle cx="76" cy="96" r="3" fill="url(#gg)" stroke="none"/>
+    <line x1="47" y1="97.5" x2="57" y2="100.5"/>
+    <line x1="63" y1="100.5" x2="73" y2="97.5"/>
+  </g>
+</svg>

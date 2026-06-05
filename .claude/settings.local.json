@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 -c ' *)",
+      "Bash(mkdir -p /Users/a/Documents/mediledgerNigeria/backend/supabase/migrations \\\\ *)",
+      "Bash(grep -v '^$')"
+    ],
+    "additionalDirectories": [
+      "/Users/a/Documents/mediledgerNigeria/backend/supabase"
+    ]
+  }
+}

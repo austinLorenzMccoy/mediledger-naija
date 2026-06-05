@@ -1,0 +1,38 @@
+# Secrets — never commit
+.env
+.env.local
+.env*.local
+*.env
+
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+
+# Build output
+.next/
+dist/
+build/
+
+# Circuit artifacts (large, generated)
+backend/circuits/artifacts/
+backend/circuits/keys/
+backend/circuits/*.zkey
+backend/circuits/*.ptau
+
+# ML weights (large binaries)
+*.npy
+*.npz
+*.pt
+*.pkl
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+*.iml
+.claude/

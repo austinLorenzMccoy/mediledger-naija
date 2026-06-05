@@ -1,0 +1,36 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx --yes playwright@latest screenshot --browser chromium --viewport-size \"1440,900\" --full-page http://localhost:3001 /tmp/mediledger_full.png)",
+      "Bash(npx --yes playwright@latest screenshot --browser chromium --viewport-size \"1440,900\" http://localhost:3001/dashboard /tmp/mediledger_dashboard.png)",
+      "Bash(node -e ' *)",
+      "Bash(find /Users/a -name \"playwright\" -path \"*/node_modules/.bin/playwright\" 2>/dev/null | head -3)",
+      "Read(//Users/a/**)",
+      "Bash(openssl rand *)",
+      "Bash(grep -E \"^\\\\.env$\")",
+      "Bash(grep -E \"^\\\\.env\\\\.local$\")",
+      "Bash(circom --version)",
+      "Bash(snarkjs --version)",
+      "Bash(brew install *)",
+      "Bash(cargo install *)",
+      "Bash(brew search *)",
+      "Bash(cargo --version)",
+      "Bash(npm test *)",
+      "Bash(npx hardhat *)",
+      "Bash(mkdir -p /Users/a/Documents/mediledgerNigeria/backend/contracts/src *)",
+      "Bash(bash scripts/download-ptau.sh)",
+      "Bash(rm -f hermez_final_11.ptau)",
+      "Bash(curl -L -o hermez_final_11.ptau \"https://storage.googleapis.com/zkevm/ptau/hermez_final_11.ptau\")",
+      "Bash(curl -sI \"https://hermez.s3-eu-west-1.amazonaws.com/powersOfTau28_hez_final_11.ptau\")",
+      "Bash(bash scripts/setup-circuits.sh)",
+      "Bash(pkill -f \"next dev\")",
+      "Bash(npm run *)",
+      "Bash(npx --yes playwright@latest screenshot --browser chromium --viewport-size \"1440,900\" --full-page http://localhost:3001 /tmp/ml_landing.png)",
+      "Bash(git init *)",
+      "Bash(git add *)"
+    ],
+    "additionalDirectories": [
+      "/Users/a/Documents/mediledgerNigeria/backend/contracts"
+    ]
+  }
+}

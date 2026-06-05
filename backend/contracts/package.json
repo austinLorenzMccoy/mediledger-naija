@@ -1,0 +1,29 @@
+{
+  "name": "@mediledger/contracts",
+  "version": "1.0.0",
+  "description": "MediLedger Nigeria — Solidity smart contracts for Hedera Smart Contract Service",
+  "private": true,
+  "scripts": {
+    "compile": "npx hardhat compile",
+    "test": "npx hardhat test",
+    "deploy:testnet": "HEDERA_NETWORK=testnet npx hardhat run scripts/deploy.js --network hedera_testnet",
+    "deploy:mainnet": "HEDERA_NETWORK=mainnet npx hardhat run scripts/deploy.js --network hedera_mainnet",
+    "create-token": "node scripts/create-heal-token.js",
+    "create-topics": "node scripts/create-hcs-topics.js",
+    "lint": "npx solhint 'contracts/**/*.sol'"
+  },
+  "devDependencies": {
+    "@nomiclabs/hardhat-ethers": "^2.2.3",
+    "@nomiclabs/hardhat-waffle": "^2.0.6",
+    "@openzeppelin/contracts": "^4.9.0",
+    "chai": "^4.3.10",
+    "ethereum-waffle": "^4.0.10",
+    "ethers": "^5.7.2",
+    "hardhat": "^2.19.0",
+    "solhint": "^4.1.0"
+  },
+  "dependencies": {
+    "@hashgraph/sdk": "^2.0.0",
+    "dotenv": "^16.0.0"
+  }
+}

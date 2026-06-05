@@ -1,0 +1,68 @@
+[project]
+name = "mediledger-ai-service"
+version = "1.0.0"
+description = "MediLedger Nigeria — AI Health Guardian (federated learning + diagnostic inference)"
+requires-python = ">=3.11"
+dependencies = [
+    # Inference
+    "torch==2.1.2",
+    "pytorch-tabnet==4.1.0",
+    # Differential privacy
+    "opacus==1.4.0",
+    # Federated learning
+    "flwr==1.6.0",
+    # FHIR parsing
+    "fhirclient==4.1.0",
+    # API
+    "fastapi==0.104.0",
+    "uvicorn[standard]==0.24.0",
+    # Data
+    "numpy>=1.26,<2.0",
+    "scikit-learn>=1.3,<2.0",
+    # Storage / cache
+    "supabase==2.0.0",
+    "redis==5.0.1",
+    # ZK vault client (HTTP calls to zk-vault-service)
+    "httpx>=0.27,<1.0",
+    # Config
+    "python-dotenv>=1.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4",
+    "pytest-asyncio>=0.23",
+    "ruff>=0.1",
+]
+modal = [
+    # Modal deployment for federated learning rounds (GPU, scheduled)
+    "modal>=0.62",
+]
+
+[tool.uv]
+# Pin index for reproducible builds
+index-url = "https://pypi.org/simple"
+# Resolve torch CPU build on non-GPU CI runners
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.uv.sources]
+# Use CPU-only torch on CI/Docker to keep image size manageable.
+# Remove this override on GPU hosts — uv will pick the right wheel via index priority.
+torch = [
+    { index = "pytorch-cpu", marker = "sys_platform == 'linux' and extra != 'gpu'" },
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]

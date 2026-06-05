@@ -1,0 +1,59 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "IConsentRegistry",
+  "sourceName": "src/VaultAwareConsentRegistry.sol",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "consentId",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "patientHash",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "requesterHash",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "uint8",
+          "name": "requesterType",
+          "type": "uint8"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "scopeHash",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "uint256",
+          "name": "validFrom",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "validUntil",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint96",
+          "name": "monthlyPaymentHeal",
+          "type": "uint96"
+        }
+      ],
+      "name": "grantConsent",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

@@ -1,0 +1,152 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 160" width="480" height="160" role="img" aria-label="MediLedger Nigeria Logo">
+  <defs>
+    <!-- Background -->
+    <rect id="bg" width="480" height="160" rx="16" fill="#0A1E14"/>
+
+    <!-- Mint gradient for shield -->
+    <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4EC99A"/>
+      <stop offset="100%" stop-color="#2A8C68"/>
+    </linearGradient>
+
+    <!-- Terra accent gradient -->
+    <linearGradient id="terraGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E8754A"/>
+      <stop offset="100%" stop-color="#C9572A"/>
+    </linearGradient>
+
+    <!-- Gold gradient -->
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F0C96B"/>
+      <stop offset="100%" stop-color="#D4A843"/>
+    </linearGradient>
+
+    <!-- Glow filter for the mark -->
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Clip for logo mark area -->
+    <clipPath id="markClip">
+      <circle cx="80" cy="80" r="56"/>
+    </clipPath>
+  </defs>
+
+  <!-- Background panel -->
+  <rect width="480" height="160" rx="16" fill="#0A1E14"/>
+
+  <!-- Subtle adire background pattern (diamond grid) -->
+  <g opacity="0.06" stroke="#4EC99A" stroke-width="0.6" fill="none">
+    <!-- repeating diamond grid -->
+    <path d="M80 24 L116 60 L80 96 L44 60 Z"/>
+    <path d="M80 32 L108 60 L80 88 L52 60 Z"/>
+    <path d="M44 60 L80 24 M116 60 L80 96"/>
+    <path d="M20 80 L60 40 M60 120 L20 80"/>
+    <path d="M140 80 L100 40 M100 120 L140 80"/>
+    <!-- far right subtle pattern -->
+    <path d="M400 24 L436 60 L400 96 L364 60 Z" opacity="0.5"/>
+    <path d="M440 50 L460 70 L440 90 L420 70 Z" opacity="0.3"/>
+  </g>
+
+  <!-- ===================== LOGOMARK ===================== -->
+  <!-- Outer circle ring -->
+  <circle cx="80" cy="80" r="54" fill="none" stroke="url(#shieldGrad)" stroke-width="1.5" opacity="0.5"/>
+
+  <!-- Main shield body — Adire diamond shape (rotated square) -->
+  <path d="M80 22 L128 68 L80 138 L32 68 Z"
+        fill="#0D2B1F"
+        stroke="url(#shieldGrad)"
+        stroke-width="1.8"
+        filter="url(#glow)"/>
+
+  <!-- Inner Adire concentric diamond layers -->
+  <path d="M80 34 L116 68 L80 122 L44 68 Z"
+        fill="none" stroke="url(#shieldGrad)" stroke-width="0.8" opacity="0.45"/>
+  <path d="M80 46 L104 68 L80 108 L56 68 Z"
+        fill="none" stroke="url(#shieldGrad)" stroke-width="0.6" opacity="0.3"/>
+
+  <!-- Adire corner dots at diamond vertices -->
+  <circle cx="80" cy="22" r="3" fill="url(#goldGrad)" opacity="0.9"/>
+  <circle cx="128" cy="68" r="3" fill="url(#goldGrad)" opacity="0.9"/>
+  <circle cx="80" cy="138" r="3" fill="url(#goldGrad)" opacity="0.9"/>
+  <circle cx="32" cy="68" r="3" fill="url(#goldGrad)" opacity="0.9"/>
+
+  <!-- Medical cross — centered, mint + terra accent -->
+  <!-- Horizontal bar -->
+  <rect x="62" y="60" width="36" height="16" rx="4" fill="url(#shieldGrad)" opacity="0.95"/>
+  <!-- Vertical bar -->
+  <rect x="72" y="50" width="16" height="36" rx="4" fill="url(#shieldGrad)" opacity="0.95"/>
+  <!-- Cross highlight -->
+  <rect x="62" y="60" width="36" height="16" rx="4" fill="none" stroke="#ffffff" stroke-width="0.5" opacity="0.2"/>
+  <rect x="72" y="50" width="16" height="36" rx="4" fill="none" stroke="#ffffff" stroke-width="0.5" opacity="0.2"/>
+
+  <!-- Terra accent dot (pulse indicator) — top right of cross -->
+  <circle cx="108" cy="44" r="6" fill="url(#terraGrad)" opacity="0.9"/>
+  <circle cx="108" cy="44" r="9" fill="none" stroke="#E8754A" stroke-width="1" opacity="0.45"/>
+
+  <!-- Subtle blockchain link lines at bottom of shield -->
+  <g opacity="0.5" stroke="url(#goldGrad)" stroke-width="1" fill="none" stroke-linecap="round">
+    <line x1="62" y1="102" x2="72" y2="110"/>
+    <line x1="80" y1="110" x2="88" y2="102"/>
+    <circle cx="62" cy="102" r="2.5" fill="url(#goldGrad)" stroke="none"/>
+    <circle cx="80" cy="110" r="2.5" fill="url(#goldGrad)" stroke="none"/>
+    <circle cx="98" cy="102" r="2.5" fill="url(#goldGrad)" stroke="none"/>
+    <line x1="88" y1="102" x2="98" y2="102"/>
+  </g>
+
+  <!-- ===================== WORDMARK ===================== -->
+  <!-- Main name: MediLedger -->
+  <text x="154" y="74"
+    font-family="Georgia, 'Times New Roman', serif"
+    font-size="32"
+    font-weight="700"
+    letter-spacing="0.5"
+    fill="#F0EBE0">Medi</text>
+
+  <text x="220" y="74"
+    font-family="Georgia, 'Times New Roman', serif"
+    font-size="32"
+    font-weight="400"
+    letter-spacing="0.5"
+    fill="#4EC99A">Ledger</text>
+
+  <!-- Divider line between name and tagline -->
+  <line x1="154" y1="82" x2="380" y2="82" stroke="#4EC99A" stroke-width="0.8" opacity="0.3"/>
+
+  <!-- Nigeria sub-label -->
+  <text x="155" y="100"
+    font-family="'Courier New', monospace"
+    font-size="13"
+    letter-spacing="4"
+    fill="#D4A843"
+    opacity="0.9">NIGERIA</text>
+
+  <!-- Hedera / blockchain small badge -->
+  <rect x="300" y="88" width="80" height="18" rx="9"
+        fill="#4EC99A" fill-opacity="0.1"
+        stroke="#4EC99A" stroke-width="0.7" stroke-opacity="0.4"/>
+  <text x="340" y="101"
+    font-family="'Courier New', monospace"
+    font-size="9"
+    text-anchor="middle"
+    letter-spacing="1.5"
+    fill="#4EC99A" opacity="0.8">HEDERA</text>
+
+  <!-- Tagline -->
+  <text x="155" y="128"
+    font-family="Georgia, 'Times New Roman', serif"
+    font-size="13"
+    font-style="italic"
+    font-weight="400"
+    letter-spacing="0.3"
+    fill="#9DB8A5"
+    opacity="0.85">Your Records. Your Control. Your Economy.</text>
+
+  <!-- Bottom accent line (terra) -->
+  <rect x="154" y="138" width="48" height="2.5" rx="1.25" fill="url(#terraGrad)" opacity="0.8"/>
+  <rect x="208" y="138" width="12" height="2.5" rx="1.25" fill="url(#goldGrad)" opacity="0.6"/>
+</svg>

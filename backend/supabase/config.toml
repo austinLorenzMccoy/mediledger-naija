@@ -1,0 +1,50 @@
+# Supabase project configuration
+# Apply with: supabase link --project-ref <ref> && supabase db push
+
+[project]
+id = "mediledger-nigeria"
+
+[api]
+port = 54321
+schemas = ["public", "storage", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+shadow_port = 54320
+major_version = 15
+
+[studio]
+port = 54323
+
+[inbucket]
+port = 54324
+smtp_port = 54325
+pop3_port = 54326
+
+[storage]
+file_size_limit = "52428800"  # 50MB
+
+[auth]
+site_url = "https://mediledger-nigeria.vercel.app"
+additional_redirect_urls = ["https://mediledger-nigeria.vercel.app/auth/callback"]
+jwt_expiry = 3600
+enable_signup = true
+
+  [auth.email]
+  enable_signup = true
+  double_confirm_changes = true
+  enable_confirmations = true
+
+  [auth.sms]
+  enable_signup = true
+  enable_confirmations = true
+  # Africa's Talking configured via environment variables
+
+  [auth.external.google]
+  enabled = true
+  # GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET set in Supabase Dashboard
+
+[functions]
+# Edge functions are deployed from supabase/functions/

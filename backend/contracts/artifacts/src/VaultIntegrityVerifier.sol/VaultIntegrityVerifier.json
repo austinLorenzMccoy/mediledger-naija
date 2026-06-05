@@ -1,0 +1,45 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "VaultIntegrityVerifier",
+  "sourceName": "src/VaultIntegrityVerifier.sol",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "uint256[2]",
+          "name": "a",
+          "type": "uint256[2]"
+        },
+        {
+          "internalType": "uint256[2][2]",
+          "name": "b",
+          "type": "uint256[2][2]"
+        },
+        {
+          "internalType": "uint256[2]",
+          "name": "c",
+          "type": "uint256[2]"
+        },
+        {
+          "internalType": "uint256[3]",
+          "name": "input",
+          "type": "uint256[3]"
+        }
+      ],
+      "name": "verifyProof",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x608080604052346100155760ee908161001b8239f35b600080fdfe6080806040526004361015601257600080fd5b600090813560e01c6311479fea14602857600080fd5b3460b45761016036600319011260b4573660441160b4573660c41160b457366101041160b457366101641160b45762461bcd60e51b815260206004820152603360248201527f52756e2073657475702d63697263756974732e736820746f2067656e6572617460448201527232903a3432903932b0b6103b32b934b334b2b960691b6064820152608490fd5b5080fdfea2646970667358221220a7b829a48a5e773dc56fc8b7a10fdbc0b682ca63bd6eb83835a81bfe079e8e8064736f6c63430008140033",
+  "deployedBytecode": "0x6080806040526004361015601257600080fd5b600090813560e01c6311479fea14602857600080fd5b3460b45761016036600319011260b4573660441160b4573660c41160b457366101041160b457366101641160b45762461bcd60e51b815260206004820152603360248201527f52756e2073657475702d63697263756974732e736820746f2067656e6572617460448201527232903a3432903932b0b6103b32b934b334b2b960691b6064820152608490fd5b5080fdfea2646970667358221220a7b829a48a5e773dc56fc8b7a10fdbc0b682ca63bd6eb83835a81bfe079e8e8064736f6c63430008140033",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

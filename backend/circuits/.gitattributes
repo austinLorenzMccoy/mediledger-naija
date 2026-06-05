@@ -1,0 +1,4 @@
+# Track large ZK proving key files with Git LFS
+*.zkey filter=lfs diff=lfs merge=lfs -text
+*.r1cs filter=lfs diff=lfs merge=lfs -text
+hermez_final_15.ptau filter=lfs diff=lfs merge=lfs -text
