@@ -1,3 +1,4 @@
+const path = require('path');
 const {
   Client,
   AccountId,
@@ -5,7 +6,7 @@ const {
   TopicCreateTransaction,
   Hbar,
 } = require('@hashgraph/sdk');
-require('dotenv').config({ path: '../../.env' });
+require('dotenv').config({ path: path.join(__dirname, '../../.env') });
 
 const TOPICS = [
   { name: 'mediledger.audit.main',  memo: 'MediLedger: All platform events (permanent)' },
@@ -22,10 +23,10 @@ async function createTopics() {
 
   client.setOperator(
     AccountId.fromString(process.env.HEDERA_OPERATOR_ID),
-    PrivateKey.fromString(process.env.HEDERA_OPERATOR_KEY),
+    PrivateKey.fromStringECDSA(process.env.HEDERA_OPERATOR_KEY),
   );
 
-  const submitKey = PrivateKey.fromString(process.env.NHIA_SUBMIT_KEY);
+  const submitKey = PrivateKey.fromStringECDSA(process.env.NHIA_SUBMIT_KEY ?? process.env.NHIA_ADMIN_KEY);
 
   console.log('Creating HCS topics on Hedera', process.env.HEDERA_NETWORK ?? 'testnet', '...\n');
 

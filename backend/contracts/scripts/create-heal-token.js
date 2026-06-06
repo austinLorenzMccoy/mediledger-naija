@@ -1,3 +1,4 @@
+const path = require('path');
 const {
   Client,
   AccountId,
@@ -7,7 +8,7 @@ const {
   TokenSupplyType,
   Hbar,
 } = require('@hashgraph/sdk');
-require('dotenv').config({ path: '../../.env' });
+require('dotenv').config({ path: path.join(__dirname, '../../.env') });
 
 async function createHealToken() {
   const client = process.env.HEDERA_NETWORK === 'mainnet'
@@ -16,11 +17,11 @@ async function createHealToken() {
 
   client.setOperator(
     AccountId.fromString(process.env.HEDERA_OPERATOR_ID),
-    PrivateKey.fromString(process.env.HEDERA_OPERATOR_KEY),
+    PrivateKey.fromStringECDSA(process.env.HEDERA_OPERATOR_KEY),
   );
 
-  const adminKey  = PrivateKey.fromString(process.env.NHIA_ADMIN_KEY);
-  const freezeKey = PrivateKey.fromString(process.env.NHIA_ADMIN_KEY);
+  const adminKey  = PrivateKey.fromStringECDSA(process.env.NHIA_ADMIN_KEY);
+  const freezeKey = PrivateKey.fromStringECDSA(process.env.NHIA_ADMIN_KEY);
   const treasuryId = AccountId.fromString(process.env.NHIA_TREASURY_ID);
 
   console.log('Creating HEAL Token on Hedera', process.env.HEDERA_NETWORK ?? 'testnet', '...');

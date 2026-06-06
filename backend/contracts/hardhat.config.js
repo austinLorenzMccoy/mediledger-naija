@@ -24,7 +24,7 @@ module.exports = {
         ? [process.env.NHIA_DEPLOYER_PRIVATE_KEY_HEX]
         : [],
       gas: 4_000_000,
-      gasPrice: 'auto',
+      gasPrice: 1_200_000_000_000, // 1200 Gwei — above Hedera testnet relay minimum (~1100 Gwei)
     },
     hedera_mainnet: {
       url: HEDERA_MAINNET_RPC,
@@ -33,7 +33,7 @@ module.exports = {
         ? [process.env.NHIA_DEPLOYER_PRIVATE_KEY_HEX]
         : [],
       gas: 4_000_000,
-      gasPrice: 'auto',
+      gasPrice: 470_000_000_000, // 470 Gwei — Hedera mainnet minimum
     },
   },
   paths: {
