@@ -4,6 +4,7 @@ import { Icon } from "@/components/mediledger/icon"
 import { NAV_ITEMS, SIDEBAR_OPEN, SIDEBAR_CLOSED, type NavItemId, type WalletAccount } from "@/lib/mediledger"
 import { useAuth } from "@/contexts/AuthContext"
 import { usePatientBundle } from "@/hooks/usePatientBundle"
+import { BUILD_ID } from "@/lib/build-info"
 
 interface SidebarProps {
   active: NavItemId
@@ -171,6 +172,9 @@ export function Sidebar({
                   : patient?.nhia_id
                     ? `NHIA ${patient.nhia_id}`
                     : displayId}
+              </div>
+              <div className="mt-0.5 truncate font-mono text-[9px] text-text-muted" title={BUILD_ID}>
+                {BUILD_ID}
               </div>
             </div>
           )}

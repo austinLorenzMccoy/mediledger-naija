@@ -4,6 +4,7 @@ import { Icon } from "@/components/mediledger/icon"
 import { usePatientBundle } from "@/hooks/usePatientBundle"
 import { formatRelative, vaultSealStatus } from "@/lib/api/patients"
 import type { WalletAccount } from "@/lib/mediledger"
+import { BUILD_ID, BUILD_NOTE } from "@/lib/build-info"
 
 interface StatCardProps {
   label: string
@@ -96,6 +97,9 @@ export function OverviewPage({ wallet = null }: OverviewPageProps) {
             : wallet
               ? `Wallet ${wallet.accountId} · ${wallet.balance} HBAR · link a patient profile for vault data`
               : error ?? "Sign in or connect a wallet to load your health data."}
+        </p>
+        <p className="mt-1 font-mono text-[10px] text-text-muted">
+          build {BUILD_ID} · {BUILD_NOTE}
         </p>
       </div>
 

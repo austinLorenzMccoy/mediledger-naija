@@ -1,0 +1,10 @@
+{
+  "name": "mediledger-nigeria",
+  "private": true,
+  "description": "Monorepo root — Vercel builds the Next.js app under frontend/",
+  "scripts": {
+    "dev": "npm --prefix frontend run dev",
+    "build": "npm --prefix frontend run build",
+    "start": "npm --prefix frontend run start"
+  }
+}
