@@ -1,6 +1,7 @@
-// Mock wallet — development and demo environments only
-// Simulates Hedera account without real network calls
-// Enable: NEXT_PUBLIC_WALLET_MODE=mock in .env.local
+// Mock wallet — local development only (never on production unless ALLOW_MOCK_WALLET)
+// Enable: NEXT_PUBLIC_WALLET_MODE=mock in .env.local (dev)
+
+import { isMockMode as checkMockMode } from '@/lib/wallet/mode';
 
 export const mockWallet = {
   accountId: '0.0.4728297',
@@ -12,7 +13,6 @@ export const mockWallet = {
   },
 
   signMessage: async (message: string): Promise<string> => {
-    // Returns a deterministic fake signature — never use in production
     const fakeHex = Buffer.from(`mock_sig:${message}`).toString('hex').padEnd(128, '0').slice(0, 128);
     return fakeHex;
   },
@@ -22,7 +22,7 @@ export const mockWallet = {
   },
 
   getBalance: async (): Promise<{ hbar: number; heal: number }> => {
-    return { hbar: 150.50, heal: 18400 };
+    return { hbar: 150.5, heal: 18400 };
   },
 
   transferHeal: async (to: string, amount: number): Promise<{ txId: string }> => {
@@ -32,6 +32,4 @@ export const mockWallet = {
   disconnect: () => {},
 };
 
-export const isMockMode = (): boolean =>
-  typeof window !== 'undefined' &&
-  process.env.NEXT_PUBLIC_WALLET_MODE === 'mock';
+export const isMockMode = checkMockMode;

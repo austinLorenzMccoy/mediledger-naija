@@ -2,5 +2,10 @@
   "framework": "nextjs",
   "buildCommand": "npm run build",
   "outputDirectory": ".next",
-  "installCommand": "npm install"
+  "installCommand": "npm install",
+  "env": {
+    "NEXT_PUBLIC_WALLET_MODE": "live",
+    "NEXT_PUBLIC_ALLOW_MOCK_WALLET": "false",
+    "NEXT_PUBLIC_HEDERA_NETWORK": "testnet"
+  }
 }

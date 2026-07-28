@@ -2,73 +2,34 @@
 
 import { useState } from "react"
 import { Icon } from "@/components/mediledger/icon"
-import { mockConnect, liveConnect, type WalletAccount, type WalletProvider } from "@/lib/mediledger"
+import { liveConnect, type WalletAccount, type WalletProvider } from "@/lib/mediledger"
+import { isMockMode, walletNetworkLabel } from "@/lib/wallet/mode"
 
 interface WalletModalProps {
   onClose: () => void
   onConnected: (account: WalletAccount) => void
 }
 
-function QRCode() {
-  return (
-    <svg width={180} height={180} viewBox="0 0 180 180" style={{ borderRadius: 8 }}>
-      <rect width={180} height={180} fill="#143824" rx={8} />
-      {[[8, 8], [138, 8], [8, 138]].map(([x, y], i) => (
-        <g key={i} transform={`translate(${x},${y})`}>
-          <rect width={34} height={34} rx={4} fill="none" stroke="#4EC99A" strokeWidth={3} />
-          <rect x={6} y={6} width={22} height={22} rx={2} fill="#4EC99A" />
-          <rect x={10} y={10} width={14} height={14} rx={1} fill="#143824" />
-        </g>
-      ))}
-      <g transform="translate(138,138)">
-        <rect width={34} height={34} rx={4} fill="none" stroke="#4EC99A" strokeWidth={3} />
-        <rect x={6} y={6} width={22} height={22} rx={2} fill="#4EC99A" />
-        <rect x={10} y={10} width={14} height={14} rx={1} fill="#143824" />
-      </g>
-      {[...Array(8)].map((_, r) =>
-        [...Array(8)].map((_, c) => {
-          const skip =
-            (r < 3 && c < 3) || (r < 3 && c > 4) || (r > 4 && c < 3) || (r > 4 && c > 4)
-          if (skip) return null
-          const on = Math.random() > 0.4
-          return on ? (
-            <rect
-              key={`${r}-${c}`}
-              x={48 + c * 11}
-              y={48 + r * 11}
-              width={8}
-              height={8}
-              rx={1.5}
-              fill="#4EC99A"
-              opacity={0.85}
-            />
-          ) : null
-        })
-      )}
-      <text x={90} y={172} textAnchor="middle" fill="#9DB8A5" fontSize={8} fontFamily="monospace">
-        WalletConnect v2
-      </text>
-    </svg>
-  )
-}
-
 export function WalletModal({ onClose, onConnected }: WalletModalProps) {
-  const [step, setStep] = useState<"choose" | "qr" | "connecting" | "success" | "error">("choose")
+  const [step, setStep] = useState<"choose" | "connecting" | "success" | "error">("choose")
   const [error, setError] = useState("")
   const [account, setAccount] = useState<WalletAccount | null>(null)
+  const [activeProvider, setActiveProvider] = useState<WalletProvider>("hashpack")
+  const allowDemo = isMockMode()
 
-  const handleConnect = async (provider: WalletProvider = "mock") => {
+  const handleConnect = async (provider: WalletProvider) => {
+    setActiveProvider(provider)
     setStep("connecting")
     setError("")
     try {
-      const isMock = process.env.NEXT_PUBLIC_WALLET_MODE === "mock" || provider === "mock"
-      const result = isMock ? await mockConnect() : await liveConnect(provider)
+      // Never force mock when user picks HashPack/Blade/WC — only "mock" provider uses demo
+      const result = await liveConnect(provider)
       setAccount(result)
       setStep("success")
       setTimeout(() => {
         onConnected(result)
         onClose()
-      }, 1400)
+      }, 1200)
     } catch (e) {
       setError((e as Error).message)
       setStep("error")
@@ -83,10 +44,7 @@ export function WalletModal({ onClose, onConnected }: WalletModalProps) {
         if (e.target === e.currentTarget) onClose()
       }}
     >
-      <div
-        className="fade-in w-full max-w-[440px] overflow-hidden rounded-2xl border border-border-color bg-ink"
-      >
-        {/* Header */}
+      <div className="fade-in w-full max-w-[440px] overflow-hidden rounded-2xl border border-border-color bg-ink">
         <div className="flex items-center justify-between border-b border-border-color px-6 py-5">
           <div className="flex items-center gap-2.5">
             <div
@@ -97,10 +55,11 @@ export function WalletModal({ onClose, onConnected }: WalletModalProps) {
             </div>
             <div>
               <div className="text-[15px] font-semibold text-text-primary">Connect Wallet</div>
-              <div className="font-mono text-[11px] text-text-muted">Hedera Testnet</div>
+              <div className="font-mono text-[11px] text-text-muted">{walletNetworkLabel()}</div>
             </div>
           </div>
           <button
+            type="button"
             onClick={onClose}
             className="flex border-none bg-transparent p-1 text-text-muted"
           >
@@ -112,12 +71,13 @@ export function WalletModal({ onClose, onConnected }: WalletModalProps) {
           {step === "choose" && (
             <div>
               <p className="mb-5 text-[13px] leading-relaxed text-text-muted">
-                Connect your HashPack wallet to access your health vault, sign consent transactions, and earn $HEAL tokens.
+                Connect a real Hedera wallet to sign consents and receive $HEAL. Install the
+                extension, then approve the pairing popup.
               </p>
 
-              {/* HashPack via WalletConnect */}
               <button
-                onClick={() => handleConnect("hashpack")}
+                type="button"
+                onClick={() => void handleConnect("hashpack")}
                 className="mb-3 flex w-full items-center gap-3.5 rounded-[10px] border border-mint/25 bg-gradient-to-br from-forest-mid to-forest-light p-4 text-left transition-all hover:border-mint"
               >
                 <div
@@ -128,17 +88,34 @@ export function WalletModal({ onClose, onConnected }: WalletModalProps) {
                 </div>
                 <div className="flex-1">
                   <div className="text-sm font-semibold text-text-primary">HashPack</div>
-                  <div className="text-xs text-text-muted">via WalletConnect v2</div>
+                  <div className="text-xs text-text-muted">Browser extension · live pairing</div>
                 </div>
                 <span className="rounded-xl bg-mint/15 px-2 py-0.5 font-mono text-[10px] text-mint">
                   RECOMMENDED
                 </span>
               </button>
 
-              {/* QR option */}
               <button
-                onClick={() => setStep("qr")}
-                className="mb-5 flex w-full items-center gap-3.5 rounded-[10px] border border-border-color bg-forest-mid p-3.5 text-left transition-colors hover:border-mint/30"
+                type="button"
+                onClick={() => void handleConnect("blade")}
+                className="mb-3 flex w-full items-center gap-3.5 rounded-[10px] border border-border-color bg-forest-mid p-4 text-left transition-colors hover:border-mint/30"
+              >
+                <div
+                  className="flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-[10px] text-sm font-bold text-white"
+                  style={{ background: "linear-gradient(135deg, #0EA5E9, #0369A1)" }}
+                >
+                  B
+                </div>
+                <div className="flex-1">
+                  <div className="text-sm font-semibold text-text-primary">Blade</div>
+                  <div className="text-xs text-text-muted">Extension / mobile</div>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => void handleConnect("walletconnect")}
+                className="mb-5 flex w-full items-center gap-3.5 rounded-[10px] border border-border-color bg-forest-mid p-4 text-left transition-colors hover:border-mint/30"
               >
                 <div className="flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-[10px] border border-gold/25 bg-gold/15">
                   <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="#D4A843" strokeWidth="1.8">
@@ -147,55 +124,35 @@ export function WalletModal({ onClose, onConnected }: WalletModalProps) {
                     <rect x="3" y="14" width="7" height="7" />
                     <rect x="14" y="14" width="3" height="3" />
                     <rect x="18" y="18" width="3" height="3" />
-                    <rect x="14" y="18" width="3" height="3" />
-                    <rect x="18" y="14" width="3" height="3" />
                   </svg>
                 </div>
-                <div>
-                  <div className="text-sm font-medium text-text-primary">Scan QR Code</div>
-                  <div className="text-xs text-text-muted">Connect any WalletConnect wallet</div>
+                <div className="flex-1">
+                  <div className="text-sm font-medium text-text-primary">WalletConnect</div>
+                  <div className="text-xs text-text-muted">QR / injected provider</div>
                 </div>
               </button>
 
-              <div className="text-center">
-                <span className="text-xs text-text-muted">
-                  {"Don't have HashPack? "}
-                  <a
-                    href="https://www.hashpack.app/"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="border-b border-mint/30 text-mint"
-                  >
-                    Download here
-                  </a>
-                </span>
-              </div>
-            </div>
-          )}
+              {allowDemo && (
+                <button
+                  type="button"
+                  onClick={() => void handleConnect("mock")}
+                  className="mb-4 w-full rounded-md border border-dashed border-border-color bg-transparent py-2 text-xs text-text-muted hover:border-gold/40 hover:text-gold"
+                >
+                  Use demo wallet (local only)
+                </button>
+              )}
 
-          {step === "qr" && (
-            <div className="text-center">
-              <p className="mb-5 text-[13px] text-text-muted">
-                Scan this QR code with your HashPack mobile app or any WalletConnect-compatible wallet.
-              </p>
-              <div className="mb-5 flex justify-center">
-                <QRCode />
+              <div className="text-center text-xs text-text-muted">
+                Need HashPack?{" "}
+                <a
+                  href="https://www.hashpack.app/"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="border-b border-mint/30 text-mint"
+                >
+                  Download extension
+                </a>
               </div>
-              <div className="mb-5 break-all font-mono text-[10px] text-text-muted">
-                {"wc:1a2b3c4d5e6f...@2?relay-protocol=irn&symKey=abc123def456"}
-              </div>
-              <button
-                onClick={() => handleConnect("walletconnect")}
-                className="w-full rounded-lg border-none bg-gradient-to-br from-mint to-mint-dark p-3 text-sm font-semibold text-forest"
-              >
-                Connect via QR
-              </button>
-              <button
-                onClick={() => setStep("choose")}
-                className="mt-2.5 w-full border-none bg-transparent text-[13px] text-text-muted"
-              >
-                {"<- Back"}
-              </button>
             </div>
           )}
 
@@ -207,9 +164,13 @@ export function WalletModal({ onClose, onConnected }: WalletModalProps) {
               >
                 <Icon name="shield" size={28} color="#4EC99A" />
               </div>
-              <div className="mb-2 text-base font-medium text-text-primary">{"Connecting to HashPack\u2026"}</div>
+              <div className="mb-2 text-base font-medium text-text-primary">
+                Connecting to {activeProvider === "mock" ? "demo wallet" : activeProvider}…
+              </div>
               <div className="mb-5 text-[13px] text-text-muted">
-                Please approve the connection request in your wallet.
+                {activeProvider === "hashpack"
+                  ? "Approve the pairing request in the HashPack extension."
+                  : "Follow the prompts in your wallet."}
               </div>
               <div className="flex justify-center gap-1.5">
                 {[0, 1, 2].map((i) => (
@@ -228,10 +189,10 @@ export function WalletModal({ onClose, onConnected }: WalletModalProps) {
               <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full border-2 border-mint bg-mint/15">
                 <Icon name="consent" size={28} color="#4EC99A" />
               </div>
-              <div className="mb-1.5 text-base font-semibold text-mint">Wallet Connected!</div>
+              <div className="mb-1.5 text-base font-semibold text-mint">Wallet Connected</div>
               <div className="font-mono text-xs text-text-muted">{account?.accountId}</div>
               <div className="mt-1 text-[13px] text-text-muted">
-                {account?.balance} HBAR &middot; Testnet
+                {account?.balance} HBAR · {account?.network}
               </div>
             </div>
           )}
@@ -242,8 +203,9 @@ export function WalletModal({ onClose, onConnected }: WalletModalProps) {
                 <Icon name="close" size={28} color="#C9572A" />
               </div>
               <div className="mb-2 text-[15px] font-medium text-terra">Connection Failed</div>
-              <div className="mb-5 text-[13px] text-text-muted">{error}</div>
+              <div className="mb-5 text-[13px] leading-relaxed text-text-muted">{error}</div>
               <button
+                type="button"
                 onClick={() => setStep("choose")}
                 className="rounded-[7px] border-none bg-gradient-to-br from-mint to-mint-dark px-7 py-2.5 font-semibold text-forest"
               >

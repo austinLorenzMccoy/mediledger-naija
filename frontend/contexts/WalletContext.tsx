@@ -1,10 +1,16 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { mockWallet, isMockMode } from '@/lib/wallet/mock-wallet';
+import { isMockMode } from '@/lib/wallet/mode';
 
 export type WalletProvider = 'hashpack' | 'blade' | 'walletconnect' | 'mock';
-export type WalletStatus = 'disconnected' | 'connecting' | 'connected' | 'transaction_pending' | 'transaction_success' | 'transaction_failed';
+export type WalletStatus =
+  | 'disconnected'
+  | 'connecting'
+  | 'connected'
+  | 'transaction_pending'
+  | 'transaction_success'
+  | 'transaction_failed';
 
 export interface WalletState {
   status: WalletStatus;
@@ -39,18 +45,25 @@ export const WalletContext = createContext<WalletContextValue>({
 export function WalletProvider({ children }: { children: ReactNode }) {
   const [walletState, setWalletState] = useState<WalletState>(DEFAULT_STATE);
 
-  // Restore persisted HashPack pairing on mount
+  // Restore last HashPack pairing metadata (account id only) — does not fake balances
   useEffect(() => {
-    if (isMockMode()) {
+    if (isMockMode()) return; // mock auto-connect is intentionally disabled on prod
+
+    try {
+      const raw = localStorage.getItem('ml_hashpack_pairing');
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as { accountId?: string; network?: string };
+      if (!parsed.accountId) return;
+
+      // Soft restore: show account as connected for UX; balances refresh on next connect/useWallet
       setWalletState((s) => ({
         ...s,
         status: 'connected',
-        accountId: mockWallet.accountId,
-        provider: 'mock',
-        healBalance: 18400,
-        hbarBalance: 150.5,
-        connector: mockWallet,
+        accountId: parsed.accountId!,
+        provider: 'hashpack',
       }));
+    } catch {
+      /* ignore */
     }
   }, []);
 
