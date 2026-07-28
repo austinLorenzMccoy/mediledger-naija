@@ -4,6 +4,8 @@ import { useState, useEffect } from "react"
 import { Icon } from "@/components/mediledger/icon"
 import { WalletButton } from "@/components/mediledger/wallet-button"
 import type { WalletAccount } from "@/lib/mediledger"
+import { useAuth } from "@/contexts/AuthContext"
+import toast from "react-hot-toast"
 
 interface LandingPageProps {
   onEnter: () => void
@@ -54,12 +56,29 @@ const METRICS = [
 
 export function LandingPage({ onEnter, wallet, onOpenWallet, onDisconnectWallet }: LandingPageProps) {
   const [scrolled, setScrolled] = useState(false)
+  const [email, setEmail] = useState("")
+  const [authBusy, setAuthBusy] = useState(false)
+  const { user, signInWithMagicLink, signInWithGoogle, signOut } = useAuth()
 
   useEffect(() => {
     const h = () => setScrolled(window.scrollY > 40)
     window.addEventListener("scroll", h)
     return () => window.removeEventListener("scroll", h)
   }, [])
+
+  async function handleMagicLink(e: React.FormEvent) {
+    e.preventDefault()
+    if (!email.trim()) return
+    setAuthBusy(true)
+    try {
+      await signInWithMagicLink(email.trim())
+      toast.success("Check your email for the magic link")
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Sign-in failed")
+    } finally {
+      setAuthBusy(false)
+    }
+  }
 
   return (
     <div className="min-h-screen font-sans">
@@ -86,6 +105,24 @@ export function LandingPage({ onEnter, wallet, onOpenWallet, onDisconnectWallet 
           <span className="hide-mobile">
             <WalletButton wallet={wallet} onOpen={onOpenWallet} onDisconnect={onDisconnectWallet} />
           </span>
+          {user ? (
+            <button
+              type="button"
+              onClick={() => void signOut()}
+              className="hidden rounded-md border border-border-color bg-transparent px-3 py-2 text-xs text-text-muted sm:inline"
+              title={user.email ?? undefined}
+            >
+              Sign out
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => void signInWithGoogle()}
+              className="hidden rounded-md border border-mint/30 bg-transparent px-3 py-2 text-xs text-mint sm:inline"
+            >
+              Google
+            </button>
+          )}
           <button
             onClick={onEnter}
             className="rounded-md border-none bg-terra px-4 py-2 text-sm font-semibold text-white md:px-6"
@@ -130,6 +167,34 @@ export function LandingPage({ onEnter, wallet, onOpenWallet, onDisconnectWallet 
         >
           {"Nigeria\u2019s first decentralized health data ecosystem \u2014 secured by zero-knowledge proofs, governed by patients, and powered by Hedera blockchain."}
         </p>
+
+        {user ? (
+          <p className="fade-in mb-4 font-mono text-xs text-mint" style={{ animationDelay: "0.4s" }}>
+            Signed in as {user.email}
+          </p>
+        ) : (
+          <form
+            onSubmit={(e) => void handleMagicLink(e)}
+            className="fade-in mb-6 flex w-full max-w-md flex-col gap-2 sm:flex-row"
+            style={{ animationDelay: "0.4s" }}
+          >
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@email.com — magic link"
+              className="min-w-0 flex-1 rounded-lg border border-border-color bg-forest-mid px-4 py-3 text-sm text-text-primary outline-none placeholder:text-text-muted focus:border-mint/40"
+            />
+            <button
+              type="submit"
+              disabled={authBusy}
+              className="rounded-lg border border-mint/40 bg-mint/15 px-5 py-3 text-sm font-semibold text-mint disabled:opacity-50"
+            >
+              {authBusy ? "Sending…" : "Sign in"}
+            </button>
+          </form>
+        )}
 
         <div
           className="fade-in flex flex-wrap justify-center gap-3.5"

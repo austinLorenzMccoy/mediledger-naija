@@ -10,6 +10,7 @@ import { TokensPage } from "@/components/mediledger/pages/tokens"
 import { SettingsPage } from "@/components/mediledger/pages/settings"
 import { PlaceholderPage } from "@/components/mediledger/pages/placeholder"
 import { NAV_ITEMS, SIDEBAR_OPEN, SIDEBAR_CLOSED, type NavItemId, type WalletAccount } from "@/lib/mediledger"
+import { useAuth } from "@/contexts/AuthContext"
 
 interface DashboardProps {
   onGoHome: () => void
@@ -19,6 +20,7 @@ interface DashboardProps {
 }
 
 export function Dashboard({ onGoHome, wallet, onOpenWallet, onDisconnectWallet }: DashboardProps) {
+  const { user, signOut } = useAuth()
   const [active, setActive] = useState<NavItemId>("overview")
   const [collapsed, setCollapsed] = useState(() => {
     try {
@@ -29,6 +31,13 @@ export function Dashboard({ onGoHome, wallet, onOpenWallet, onDisconnectWallet }
   })
   const [isMobile, setIsMobile] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
+
+  const initials = (user?.email ?? user?.user_metadata?.full_name ?? "ML")
+    .split(/[\s@]+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((s: string) => s[0]?.toUpperCase() ?? "")
+    .join("") || "ML"
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768)
@@ -124,12 +133,17 @@ export function Dashboard({ onGoHome, wallet, onOpenWallet, onDisconnectWallet }
               <Icon name="notification" size={20} color="#9DB8A5" />
               <span className="absolute -right-[3px] -top-[3px] h-2 w-2 rounded-full bg-terra" />
             </div>
-            <div
-              className="flex h-8 w-8 items-center justify-center rounded-full text-[11px] font-semibold text-white"
+            <button
+              type="button"
+              title={user?.email ?? "Not signed in"}
+              onClick={() => {
+                if (user) void signOut()
+              }}
+              className="flex h-8 w-8 items-center justify-center rounded-full border-none text-[11px] font-semibold text-white"
               style={{ background: "linear-gradient(135deg, #C9572A, #D4A843)" }}
             >
-              AO
-            </div>
+              {initials}
+            </button>
           </div>
         </header>
 

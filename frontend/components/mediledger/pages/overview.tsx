@@ -1,4 +1,8 @@
+"use client"
+
 import { Icon } from "@/components/mediledger/icon"
+import { usePatientBundle } from "@/hooks/usePatientBundle"
+import { formatRelative, vaultSealStatus } from "@/lib/api/patients"
 
 interface StatCardProps {
   label: string
@@ -33,81 +37,174 @@ function StatCard({ label, value, sub, icon, color, delay = 0 }: StatCardProps) 
   )
 }
 
-const ACTIVITY = [
-  { t: "Lagos University Teaching Hospital", d: "Blood test results uploaded", time: "2h ago", color: "#4EC99A" },
-  { t: "Consent Granted", d: "Nigerian Institute of Medical Research", time: "1d ago", color: "#D4A843" },
-  { t: "AI Alert", d: "Vitamin D deficiency risk detected", time: "3d ago", color: "#C9572A" },
-  { t: "Emergency Tag Updated", d: "Blood type O+ confirmed", time: "5d ago", color: "#4EC99A" },
-]
-
-const CONSENT_REQUESTS = [
-  { org: "NG Cancer Research Centre", type: "Genomic Data", tokens: "\u20A64,200/mo" },
-  { org: "AfDB Health Initiative", type: "Lab Results", tokens: "\u20A61,800/mo" },
-]
+function firstName(fullName?: string | null) {
+  if (!fullName) return "there"
+  return fullName.split(/\s+/)[0]
+}
 
 export function OverviewPage() {
+  const { patient, records, consents, tokenTxs, loading, error } = usePatientBundle()
+  const seal = vaultSealStatus(patient)
+
+  const activeConsents = consents.filter((c) => c.status === "active")
+  const pendingConsents = consents.filter((c) => c.status === "pending")
+  const heal = patient?.heal_balance ?? 0
+  const healDisplay =
+    heal >= 1000 ? `₦${(heal * 6.5).toLocaleString(undefined, { maximumFractionDigits: 0 })}` : `${heal.toFixed(2)} HEAL`
+
+  const activity = records.slice(0, 6).map((r) => ({
+    t: r.fhir_resource_type,
+    d: `${r.record_type} · hash ${r.record_hash.slice(0, 10)}…`,
+    time: formatRelative(r.created_at),
+    color: r.is_emergency_access ? "#E8754A" : "#4EC99A",
+  }))
+
+  if (loading) {
+    return (
+      <div className="fade-in py-16 text-center text-sm text-text-muted">
+        Loading dashboard…
+      </div>
+    )
+  }
+
   return (
     <div className="fade-in">
       <div className="mb-8">
         <h2 className="mb-1.5 font-serif text-[clamp(1.6rem,3vw,2.2rem)] text-text-primary">
-          Good morning, <span className="text-terra">Augustine</span>
+          Welcome,{" "}
+          <span className="text-terra">{firstName(patient?.full_name)}</span>
         </h2>
-        <p className="text-sm text-text-muted">{"Here\u2019s your health data overview for today."}</p>
+        <p className="text-sm text-text-muted">
+          {patient
+            ? `NHIA ${patient.nhia_id} · vault ${seal.label.toLowerCase()}`
+            : error ?? "Sign in to see your live health overview."}
+        </p>
       </div>
 
       <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard label="$HEAL Earned" value={"\u20A618,400"} sub={"+\u20A6820 this week"} icon="token" color="#D4A843" delay={0.05} />
-        <StatCard label="Active Consents" value="3" sub="2 expiring soon" icon="consent" color="#4EC99A" delay={0.1} />
-        <StatCard label="Vault Security" value="100%" sub="ZK proof active" icon="lock" color="#4EC99A" delay={0.15} />
-        <StatCard label="AI Insights" value="2 New" sub="Early detection alerts" icon="ai" color="#E8754A" delay={0.2} />
+        <StatCard
+          label="$HEAL Balance"
+          value={patient ? healDisplay : "—"}
+          sub={patient ? `${heal.toFixed(4)} HEAL on-chain cache` : "Link wallet & profile"}
+          icon="token"
+          color="#D4A843"
+          delay={0.05}
+        />
+        <StatCard
+          label="Active Consents"
+          value={String(activeConsents.length)}
+          sub={
+            pendingConsents.length
+              ? `${pendingConsents.length} pending request${pendingConsents.length === 1 ? "" : "s"}`
+              : "No pending requests"
+          }
+          icon="consent"
+          color="#4EC99A"
+          delay={0.1}
+        />
+        <StatCard
+          label="Vault Security"
+          value={seal.sealed ? "Sealed" : patient ? "Open" : "—"}
+          sub={seal.sealed ? "ZK proof active" : "Awaiting seal"}
+          icon="lock"
+          color={seal.color}
+          delay={0.15}
+        />
+        <StatCard
+          label="Health Records"
+          value={String(records.length)}
+          sub={records[0] ? `Latest ${formatRelative(records[0].created_at)}` : "None yet"}
+          icon="ai"
+          color="#E8754A"
+          delay={0.2}
+        />
       </div>
 
-      {/* Activity */}
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
         <div className="rounded-xl border border-border-color bg-forest-mid p-6">
           <h3 className="mb-4 font-serif text-base text-text-primary">Recent Vault Activity</h3>
-          {ACTIVITY.map((a, i) => (
-            <div
-              key={i}
-              className="mb-3.5 flex gap-3 pb-3.5"
-              style={{ borderBottom: i < 3 ? "1px solid rgba(78,201,154,0.18)" : "none" }}
-            >
+          {activity.length === 0 ? (
+            <p className="text-xs text-text-muted">No record activity yet.</p>
+          ) : (
+            activity.map((a, i) => (
               <div
-                className="mt-1.5 h-2 w-2 shrink-0 rounded-full"
-                style={{ background: a.color }}
-              />
-              <div className="min-w-0 flex-1">
-                <div className="text-[13px] font-medium text-text-primary">{a.t}</div>
-                <div className="mt-0.5 text-xs text-text-muted">{a.d}</div>
+                key={i}
+                className="mb-3.5 flex gap-3 pb-3.5"
+                style={{
+                  borderBottom:
+                    i < activity.length - 1 ? "1px solid rgba(78,201,154,0.18)" : "none",
+                }}
+              >
+                <div
+                  className="mt-1.5 h-2 w-2 shrink-0 rounded-full"
+                  style={{ background: a.color }}
+                />
+                <div className="min-w-0 flex-1">
+                  <div className="text-[13px] font-medium text-text-primary">{a.t}</div>
+                  <div className="mt-0.5 text-xs text-text-muted">{a.d}</div>
+                </div>
+                <div className="whitespace-nowrap font-mono text-[11px] text-text-muted">
+                  {a.time}
+                </div>
               </div>
-              <div className="whitespace-nowrap font-mono text-[11px] text-text-muted">{a.time}</div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
 
         <div className="rounded-xl border border-border-color bg-forest-mid p-6">
           <h3 className="mb-4 font-serif text-base text-text-primary">Consent Requests</h3>
-          {CONSENT_REQUESTS.map((r, i) => (
-            <div
-              key={i}
-              className="mb-3 rounded-lg border border-border-color p-4"
-              style={{ background: "rgba(13,43,31,0.72)" }}
-            >
-              <div className="mb-1 text-sm font-medium text-text-primary">{r.org}</div>
-              <div className="mb-3 text-xs text-text-muted">{r.type} access requested</div>
-              <div className="flex items-center justify-between">
-                <span className="font-mono text-xs text-gold">{r.tokens}</span>
-                <div className="flex gap-2">
-                  <button className="rounded-[5px] border border-border-color bg-transparent px-3.5 py-1.5 text-xs text-text-muted">
-                    Decline
-                  </button>
-                  <button className="rounded-[5px] border-none bg-mint px-3.5 py-1.5 text-xs font-semibold text-forest">
-                    Approve
-                  </button>
+          {pendingConsents.length === 0 && activeConsents.length === 0 ? (
+            <p className="text-xs text-text-muted">
+              No consent agreements yet. Providers will appear here when they request access.
+            </p>
+          ) : (
+            [...pendingConsents, ...activeConsents].slice(0, 5).map((c) => (
+              <div
+                key={c.id}
+                className="mb-3 rounded-lg border border-border-color p-4"
+                style={{ background: "rgba(13,43,31,0.72)" }}
+              >
+                <div className="mb-1 text-sm font-medium text-text-primary">
+                  {c.purpose || "Data access"}
+                </div>
+                <div className="mb-3 text-xs text-text-muted">
+                  {c.requester_type ?? "requester"} · {c.status}
+                  {c.valid_until ? ` · until ${new Date(c.valid_until).toLocaleDateString()}` : ""}
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="font-mono text-xs text-gold">
+                    {Number(c.monthly_payment_heal).toFixed(2)} HEAL/mo
+                  </span>
+                  <span
+                    className="rounded px-2 py-0.5 font-mono text-[10px]"
+                    style={{
+                      background: c.status === "active" ? "#4EC99A22" : "#D4A84322",
+                      color: c.status === "active" ? "#4EC99A" : "#D4A843",
+                    }}
+                  >
+                    {c.status}
+                  </span>
                 </div>
               </div>
+            ))
+          )}
+
+          {tokenTxs.length > 0 && (
+            <div className="mt-5 border-t border-border-color/40 pt-4">
+              <h4 className="mb-2 text-xs font-medium text-text-muted">Recent HEAL txs</h4>
+              {tokenTxs.slice(0, 3).map((tx) => (
+                <div
+                  key={tx.id}
+                  className="mb-2 flex justify-between font-mono text-[11px] text-text-muted"
+                >
+                  <span>{tx.tx_type ?? "transfer"}</span>
+                  <span className="text-gold">
+                    {Number(tx.amount_heal).toFixed(2)} · {tx.status}
+                  </span>
+                </div>
+              ))}
             </div>
-          ))}
+          )}
         </div>
       </div>
     </div>

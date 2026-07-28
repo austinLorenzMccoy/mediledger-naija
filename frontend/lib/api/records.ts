@@ -18,20 +18,22 @@ export const recordsApi = {
 
   // Upload a medical record blob to Supabase Storage, then insert the metadata row
   upload: async (
-    patientUserId: string,
+    /** Storage folder prefix — prefer NHIA id for bucket RLS path policies. */
+    folderKey: string,
     file: File,
     metadata: Omit<RecordInsert, 'storage_path' | 'record_hash'>,
   ) => {
-    const path = `${patientUserId}/${Date.now()}-${file.name}`;
+    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+    const path = `${folderKey}/${Date.now()}-${safeName}`;
 
-    // 1. Upload encrypted blob to medical-records bucket
+    // 1. Upload blob to medical-records bucket
     const { error: uploadError } = await supabase.storage
       .from('medical-records')
       .upload(path, file, { upsert: false });
 
     if (uploadError) throw uploadError;
 
-    // 2. Compute SHA-256 hash of the file (client-side, for integrity verification)
+    // 2. Compute SHA-256 hash of the file (client-side, for integrity / ZK seal)
     const buffer = await file.arrayBuffer();
     const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
     const recordHash = Array.from(new Uint8Array(hashBuffer))
