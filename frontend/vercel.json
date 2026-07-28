@@ -6,6 +6,7 @@
   "env": {
     "NEXT_PUBLIC_WALLET_MODE": "live",
     "NEXT_PUBLIC_ALLOW_MOCK_WALLET": "false",
-    "NEXT_PUBLIC_HEDERA_NETWORK": "testnet"
+    "NEXT_PUBLIC_HEDERA_NETWORK": "testnet",
+    "NEXT_PUBLIC_SUPABASE_URL": "https://uphncadbpfddlrdgkmtt.supabase.co"
   }
 }
