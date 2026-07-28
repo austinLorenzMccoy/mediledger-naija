@@ -3,6 +3,7 @@
 import { Icon } from "@/components/mediledger/icon"
 import { usePatientBundle } from "@/hooks/usePatientBundle"
 import { formatRelative, vaultSealStatus } from "@/lib/api/patients"
+import type { WalletAccount } from "@/lib/mediledger"
 
 interface StatCardProps {
   label: string
@@ -42,15 +43,30 @@ function firstName(fullName?: string | null) {
   return fullName.split(/\s+/)[0]
 }
 
-export function OverviewPage() {
-  const { patient, records, consents, tokenTxs, loading, error } = usePatientBundle()
+function greeting() {
+  const h = new Date().getHours()
+  if (h < 12) return "Good morning"
+  if (h < 17) return "Good afternoon"
+  return "Good evening"
+}
+
+interface OverviewPageProps {
+  wallet?: WalletAccount | null
+}
+
+export function OverviewPage({ wallet = null }: OverviewPageProps) {
+  const { patient, records, consents, tokenTxs, loading, error, user } = usePatientBundle()
   const seal = vaultSealStatus(patient)
 
   const activeConsents = consents.filter((c) => c.status === "active")
   const pendingConsents = consents.filter((c) => c.status === "pending")
-  const heal = patient?.heal_balance ?? 0
-  const healDisplay =
-    heal >= 1000 ? `₦${(heal * 6.5).toLocaleString(undefined, { maximumFractionDigits: 0 })}` : `${heal.toFixed(2)} HEAL`
+  const heal = Number(patient?.heal_balance ?? 0)
+
+  const name =
+    patient?.full_name ||
+    (user?.user_metadata?.full_name as string | undefined) ||
+    user?.email?.split("@")[0] ||
+    (wallet ? "wallet holder" : null)
 
   const activity = records.slice(0, 6).map((r) => ({
     t: r.fhir_resource_type,
@@ -62,7 +78,7 @@ export function OverviewPage() {
   if (loading) {
     return (
       <div className="fade-in py-16 text-center text-sm text-text-muted">
-        Loading dashboard…
+        Loading live dashboard…
       </div>
     )
   }
@@ -71,21 +87,32 @@ export function OverviewPage() {
     <div className="fade-in">
       <div className="mb-8">
         <h2 className="mb-1.5 font-serif text-[clamp(1.6rem,3vw,2.2rem)] text-text-primary">
-          Welcome,{" "}
-          <span className="text-terra">{firstName(patient?.full_name)}</span>
+          {greeting()},{" "}
+          <span className="text-terra">{name ? firstName(name) : "there"}</span>
         </h2>
         <p className="text-sm text-text-muted">
           {patient
             ? `NHIA ${patient.nhia_id} · vault ${seal.label.toLowerCase()}`
-            : error ?? "Sign in to see your live health overview."}
+            : wallet
+              ? `Wallet ${wallet.accountId} · ${wallet.balance} HBAR · link a patient profile for vault data`
+              : error ?? "Sign in or connect a wallet to load your health data."}
         </p>
       </div>
+
+      {!patient && (
+        <div className="mb-6 rounded-[10px] border border-gold/25 bg-gold/8 px-5 py-3.5 text-[13px] text-text-muted">
+          No Supabase patient row for this session yet. Dashboard stats stay at zero until you
+          sign in as a linked patient (or seed{" "}
+          <span className="font-mono text-mint">NHIA-TEST-001</span>). Wallet connection is live —
+          not demo data.
+        </div>
+      )}
 
       <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
           label="$HEAL Balance"
-          value={patient ? healDisplay : "—"}
-          sub={patient ? `${heal.toFixed(4)} HEAL on-chain cache` : "Link wallet & profile"}
+          value={patient ? heal.toFixed(2) : "0.00"}
+          sub={patient ? "From patients.heal_balance" : "No profile"}
           icon="token"
           color="#D4A843"
           delay={0.05}
@@ -95,8 +122,8 @@ export function OverviewPage() {
           value={String(activeConsents.length)}
           sub={
             pendingConsents.length
-              ? `${pendingConsents.length} pending request${pendingConsents.length === 1 ? "" : "s"}`
-              : "No pending requests"
+              ? `${pendingConsents.length} pending`
+              : "Realtime consent_agreements"
           }
           icon="consent"
           color="#4EC99A"
@@ -105,7 +132,7 @@ export function OverviewPage() {
         <StatCard
           label="Vault Security"
           value={seal.sealed ? "Sealed" : patient ? "Open" : "—"}
-          sub={seal.sealed ? "ZK proof active" : "Awaiting seal"}
+          sub={seal.sealed ? "ZK proof on file" : "Awaiting seal"}
           icon="lock"
           color={seal.color}
           delay={0.15}
@@ -124,7 +151,9 @@ export function OverviewPage() {
         <div className="rounded-xl border border-border-color bg-forest-mid p-6">
           <h3 className="mb-4 font-serif text-base text-text-primary">Recent Vault Activity</h3>
           {activity.length === 0 ? (
-            <p className="text-xs text-text-muted">No record activity yet.</p>
+            <p className="text-xs text-text-muted">
+              No health_records yet. Uploads and seals will appear here in realtime.
+            </p>
           ) : (
             activity.map((a, i) => (
               <div
@@ -155,7 +184,7 @@ export function OverviewPage() {
           <h3 className="mb-4 font-serif text-base text-text-primary">Consent Requests</h3>
           {pendingConsents.length === 0 && activeConsents.length === 0 ? (
             <p className="text-xs text-text-muted">
-              No consent agreements yet. Providers will appear here when they request access.
+              No consent_agreements for this patient. New requests stream in live.
             </p>
           ) : (
             [...pendingConsents, ...activeConsents].slice(0, 5).map((c) => (
@@ -167,30 +196,27 @@ export function OverviewPage() {
                 <div className="mb-1 text-sm font-medium text-text-primary">
                   {c.purpose || "Data access"}
                 </div>
-                <div className="mb-3 text-xs text-text-muted">
+                <div className="mb-2 text-xs text-text-muted">
                   {c.requester_type ?? "requester"} · {c.status}
-                  {c.valid_until ? ` · until ${new Date(c.valid_until).toLocaleDateString()}` : ""}
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="font-mono text-xs text-gold">
-                    {Number(c.monthly_payment_heal).toFixed(2)} HEAL/mo
-                  </span>
-                  <span
-                    className="rounded px-2 py-0.5 font-mono text-[10px]"
-                    style={{
-                      background: c.status === "active" ? "#4EC99A22" : "#D4A84322",
-                      color: c.status === "active" ? "#4EC99A" : "#D4A843",
-                    }}
-                  >
-                    {c.status}
-                  </span>
-                </div>
+                <span className="font-mono text-xs text-gold">
+                  {Number(c.monthly_payment_heal).toFixed(2)} HEAL/mo
+                </span>
               </div>
             ))
           )}
 
+          {wallet && (
+            <div className="mt-5 border-t border-border-color/40 pt-4 font-mono text-[11px] text-text-muted">
+              <div className="text-mint">HashPack {wallet.accountId}</div>
+              <div>
+                {wallet.balance} HBAR · {wallet.network}
+              </div>
+            </div>
+          )}
+
           {tokenTxs.length > 0 && (
-            <div className="mt-5 border-t border-border-color/40 pt-4">
+            <div className="mt-4 border-t border-border-color/40 pt-4">
               <h4 className="mb-2 text-xs font-medium text-text-muted">Recent HEAL txs</h4>
               {tokenTxs.slice(0, 3).map((tx) => (
                 <div

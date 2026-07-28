@@ -34,8 +34,14 @@ export function Dashboard({ onGoHome, wallet, onOpenWallet, onDisconnectWallet }
   const [isMobile, setIsMobile] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
 
-  const initials = (user?.email ?? user?.user_metadata?.full_name ?? "ML")
-    .split(/[\s@]+/)
+  const initials = (
+    user?.user_metadata?.full_name ||
+    user?.email ||
+    wallet?.accountId ||
+    "ML"
+  )
+    .toString()
+    .split(/[\s@._-]+/)
     .filter(Boolean)
     .slice(0, 2)
     .map((s: string) => s[0]?.toUpperCase() ?? "")
@@ -53,7 +59,7 @@ export function Dashboard({ onGoHome, wallet, onOpenWallet, onDisconnectWallet }
   const renderPage = () => {
     switch (active) {
       case "overview":
-        return <OverviewPage />
+        return <OverviewPage wallet={wallet} />
       case "vault":
         return <VaultPage />
       case "tokens":
@@ -73,7 +79,7 @@ export function Dashboard({ onGoHome, wallet, onOpenWallet, onDisconnectWallet }
       case "emergency":
         return <EmergencyPage />
       default:
-        return <OverviewPage />
+        return <OverviewPage wallet={wallet} />
     }
   }
 
@@ -88,6 +94,7 @@ export function Dashboard({ onGoHome, wallet, onOpenWallet, onDisconnectWallet }
         isMobile={isMobile}
         mobileOpen={mobileOpen}
         setMobileOpen={setMobileOpen}
+        wallet={wallet}
       />
       <div
         className="flex min-w-0 flex-1 flex-col"
@@ -113,9 +120,8 @@ export function Dashboard({ onGoHome, wallet, onOpenWallet, onDisconnectWallet }
           </div>
           <div className="flex items-center gap-3">
             <WalletButton wallet={wallet} onOpen={onOpenWallet} onDisconnect={onDisconnectWallet} compact />
-            <div className="relative">
+            <div className="relative" title="Notifications (live toasts on data changes)">
               <Icon name="notification" size={20} color="#9DB8A5" />
-              <span className="absolute -right-[3px] -top-[3px] h-2 w-2 rounded-full bg-terra" />
             </div>
             <button
               type="button"

@@ -38,7 +38,7 @@ export function WalletButton({ wallet, onOpen, onDisconnect, compact = false }: 
               <div className="mb-1 text-[11px] text-text-muted">Connected via HashPack</div>
               <div className="font-mono text-xs text-mint">{wallet.accountId}</div>
               <div className="mt-0.5 text-[11px] text-text-muted">
-                {wallet.balance} HBAR &middot; Testnet
+                {wallet.balance} HBAR &middot; {wallet.network || "testnet"}
               </div>
             </div>
             <div className="p-2">
