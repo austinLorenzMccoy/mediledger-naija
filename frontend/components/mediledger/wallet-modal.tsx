@@ -1,9 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Icon } from "@/components/mediledger/icon"
 import { liveConnect, type WalletAccount, type WalletProvider } from "@/lib/mediledger"
-import { isMockMode, walletNetworkLabel } from "@/lib/wallet/mode"
+import { isMockMode, walletModeLabel, walletNetworkLabel } from "@/lib/wallet/mode"
+import { HashPackConnector } from "@/lib/wallet/hashpack"
 
 interface WalletModalProps {
   onClose: () => void
@@ -15,21 +16,55 @@ export function WalletModal({ onClose, onConnected }: WalletModalProps) {
   const [error, setError] = useState("")
   const [account, setAccount] = useState<WalletAccount | null>(null)
   const [activeProvider, setActiveProvider] = useState<WalletProvider>("hashpack")
+  const [hashpackPresent, setHashpackPresent] = useState(false)
   const allowDemo = isMockMode()
 
+  useEffect(() => {
+    // Detect extension (and late inject)
+    const check = () => setHashpackPresent(HashPackConnector.isAvailable())
+    check()
+    const t = window.setInterval(check, 800)
+    return () => window.clearInterval(t)
+  }, [])
+
   const handleConnect = async (provider: WalletProvider) => {
+    // Hard block: HashPack without extension must not succeed
+    if (provider === "hashpack" && !HashPackConnector.isAvailable()) {
+      setActiveProvider(provider)
+      setStep("error")
+      setError(
+        "HashPack is not installed in this browser. Install the extension from hashpack.app, unlock it, refresh MediLedger, then connect. Demo wallets are disabled on this site.",
+      )
+      return
+    }
+
+    if (provider === "mock" && !allowDemo) {
+      setStep("error")
+      setError("Demo wallet is disabled on production.")
+      return
+    }
+
     setActiveProvider(provider)
     setStep("connecting")
     setError("")
     try {
-      // Never force mock when user picks HashPack/Blade/WC — only "mock" provider uses demo
       const result = await liveConnect(provider)
+
+      // Refuse to label demo as HashPack
+      if (result.isDemo && provider !== "mock") {
+        throw new Error("Internal error: demo account returned for a live provider")
+      }
+      if (result.provider === "mock" || result.isDemo) {
+        // only allowed on local demo path
+        if (!allowDemo) throw new Error("Demo wallet blocked")
+      }
+
       setAccount(result)
       setStep("success")
       setTimeout(() => {
         onConnected(result)
         onClose()
-      }, 1200)
+      }, 1000)
     } catch (e) {
       setError((e as Error).message)
       setStep("error")
@@ -55,7 +90,9 @@ export function WalletModal({ onClose, onConnected }: WalletModalProps) {
             </div>
             <div>
               <div className="text-[15px] font-semibold text-text-primary">Connect Wallet</div>
-              <div className="font-mono text-[11px] text-text-muted">{walletNetworkLabel()}</div>
+              <div className="font-mono text-[11px] text-text-muted">
+                {walletNetworkLabel()} · mode {walletModeLabel()}
+              </div>
             </div>
           </div>
           <button
@@ -70,10 +107,22 @@ export function WalletModal({ onClose, onConnected }: WalletModalProps) {
         <div className="p-6">
           {step === "choose" && (
             <div>
-              <p className="mb-5 text-[13px] leading-relaxed text-text-muted">
-                Connect a real Hedera wallet to sign consents and receive $HEAL. Install the
-                extension, then approve the pairing popup.
+              <p className="mb-4 text-[13px] leading-relaxed text-text-muted">
+                Connect a <strong className="text-text-primary">real</strong> Hedera wallet. Without
+                the HashPack extension installed, connection will fail — we no longer invent demo
+                accounts.
               </p>
+
+              <div
+                className="mb-4 rounded-lg border px-3 py-2 font-mono text-[11px]"
+                style={{
+                  borderColor: hashpackPresent ? "rgba(78,201,154,0.35)" : "rgba(201,87,42,0.35)",
+                  background: hashpackPresent ? "rgba(78,201,154,0.08)" : "rgba(201,87,42,0.08)",
+                  color: hashpackPresent ? "#4EC99A" : "#E8754A",
+                }}
+              >
+                HashPack extension: {hashpackPresent ? "detected ✓" : "not found in this browser"}
+              </div>
 
               <button
                 type="button"
@@ -88,10 +137,12 @@ export function WalletModal({ onClose, onConnected }: WalletModalProps) {
                 </div>
                 <div className="flex-1">
                   <div className="text-sm font-semibold text-text-primary">HashPack</div>
-                  <div className="text-xs text-text-muted">Browser extension · live pairing</div>
+                  <div className="text-xs text-text-muted">
+                    {hashpackPresent ? "Extension ready — click to pair" : "Requires extension install"}
+                  </div>
                 </div>
                 <span className="rounded-xl bg-mint/15 px-2 py-0.5 font-mono text-[10px] text-mint">
-                  RECOMMENDED
+                  LIVE
                 </span>
               </button>
 
@@ -108,51 +159,34 @@ export function WalletModal({ onClose, onConnected }: WalletModalProps) {
                 </div>
                 <div className="flex-1">
                   <div className="text-sm font-semibold text-text-primary">Blade</div>
-                  <div className="text-xs text-text-muted">Extension / mobile</div>
+                  <div className="text-xs text-text-muted">Extension required</div>
                 </div>
               </button>
 
-              <button
-                type="button"
-                onClick={() => void handleConnect("walletconnect")}
-                className="mb-5 flex w-full items-center gap-3.5 rounded-[10px] border border-border-color bg-forest-mid p-4 text-left transition-colors hover:border-mint/30"
-              >
-                <div className="flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-[10px] border border-gold/25 bg-gold/15">
-                  <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="#D4A843" strokeWidth="1.8">
-                    <rect x="3" y="3" width="7" height="7" />
-                    <rect x="14" y="3" width="7" height="7" />
-                    <rect x="3" y="14" width="7" height="7" />
-                    <rect x="14" y="14" width="3" height="3" />
-                    <rect x="18" y="18" width="3" height="3" />
-                  </svg>
-                </div>
-                <div className="flex-1">
-                  <div className="text-sm font-medium text-text-primary">WalletConnect</div>
-                  <div className="text-xs text-text-muted">QR / injected provider</div>
-                </div>
-              </button>
+              {!hashpackPresent && (
+                <a
+                  href="https://www.hashpack.app/"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mb-4 flex w-full items-center justify-center rounded-lg border border-mint/40 bg-mint/10 py-3 text-sm font-semibold text-mint"
+                >
+                  Install HashPack extension →
+                </a>
+              )}
 
               {allowDemo && (
                 <button
                   type="button"
                   onClick={() => void handleConnect("mock")}
-                  className="mb-4 w-full rounded-md border border-dashed border-border-color bg-transparent py-2 text-xs text-text-muted hover:border-gold/40 hover:text-gold"
+                  className="mb-2 w-full rounded-md border border-dashed border-border-color bg-transparent py-2 text-xs text-text-muted hover:border-gold/40 hover:text-gold"
                 >
-                  Use demo wallet (local only)
+                  Local demo wallet only (dev)
                 </button>
               )}
 
-              <div className="text-center text-xs text-text-muted">
-                Need HashPack?{" "}
-                <a
-                  href="https://www.hashpack.app/"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="border-b border-mint/30 text-mint"
-                >
-                  Download extension
-                </a>
-              </div>
+              <p className="text-center font-mono text-[10px] text-text-muted">
+                build wallet-v3 · no silent mock
+              </p>
             </div>
           )}
 
@@ -165,21 +199,10 @@ export function WalletModal({ onClose, onConnected }: WalletModalProps) {
                 <Icon name="shield" size={28} color="#4EC99A" />
               </div>
               <div className="mb-2 text-base font-medium text-text-primary">
-                Connecting to {activeProvider === "mock" ? "demo wallet" : activeProvider}…
+                Connecting {activeProvider}…
               </div>
               <div className="mb-5 text-[13px] text-text-muted">
-                {activeProvider === "hashpack"
-                  ? "Approve the pairing request in the HashPack extension."
-                  : "Follow the prompts in your wallet."}
-              </div>
-              <div className="flex justify-center gap-1.5">
-                {[0, 1, 2].map((i) => (
-                  <div
-                    key={i}
-                    className="h-2 w-2 rounded-full bg-mint"
-                    style={{ animation: `pulse-dot 1.2s ${i * 0.2}s infinite` }}
-                  />
-                ))}
+                Approve the request in your wallet extension popup.
               </div>
             </div>
           )}
@@ -189,10 +212,13 @@ export function WalletModal({ onClose, onConnected }: WalletModalProps) {
               <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full border-2 border-mint bg-mint/15">
                 <Icon name="consent" size={28} color="#4EC99A" />
               </div>
-              <div className="mb-1.5 text-base font-semibold text-mint">Wallet Connected</div>
+              <div className="mb-1.5 text-base font-semibold text-mint">
+                {account?.isDemo ? "Demo wallet connected" : "Wallet connected"}
+              </div>
               <div className="font-mono text-xs text-text-muted">{account?.accountId}</div>
               <div className="mt-1 text-[13px] text-text-muted">
                 {account?.balance} HBAR · {account?.network}
+                {account?.isDemo ? " · DEMO" : " · live"}
               </div>
             </div>
           )}
@@ -202,15 +228,25 @@ export function WalletModal({ onClose, onConnected }: WalletModalProps) {
               <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-terra/10">
                 <Icon name="close" size={28} color="#C9572A" />
               </div>
-              <div className="mb-2 text-[15px] font-medium text-terra">Connection Failed</div>
-              <div className="mb-5 text-[13px] leading-relaxed text-text-muted">{error}</div>
-              <button
-                type="button"
-                onClick={() => setStep("choose")}
-                className="rounded-[7px] border-none bg-gradient-to-br from-mint to-mint-dark px-7 py-2.5 font-semibold text-forest"
-              >
-                Try Again
-              </button>
+              <div className="mb-2 text-[15px] font-medium text-terra">Connection failed</div>
+              <div className="mb-5 text-left text-[13px] leading-relaxed text-text-muted">{error}</div>
+              <div className="flex flex-col gap-2">
+                <a
+                  href="https://www.hashpack.app/"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-[7px] border border-mint/40 bg-mint/10 px-7 py-2.5 text-center font-semibold text-mint"
+                >
+                  Get HashPack
+                </a>
+                <button
+                  type="button"
+                  onClick={() => setStep("choose")}
+                  className="rounded-[7px] border-none bg-gradient-to-br from-mint to-mint-dark px-7 py-2.5 font-semibold text-forest"
+                >
+                  Try again
+                </button>
+              </div>
             </div>
           )}
         </div>

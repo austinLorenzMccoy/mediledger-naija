@@ -1,5 +1,4 @@
-// HashPack wallet connector — browser extension injects window.hashpack at runtime.
-// Docs: https://docs.hashpack.app/dapp-developers
+// HashPack — requires the real browser extension. No silent demo fallback.
 
 declare global {
   interface Window {
@@ -11,7 +10,7 @@ declare global {
       ) => Promise<{ pairingString: string }>;
       connectToLocalWallet: (pairingString: string) => void;
       pairingEvent: {
-        once: (cb: (data: { topic: string; accountIds: string[]; network?: string; metadata?: unknown }) => void) => void;
+        once: (cb: (data: { topic: string; accountIds: string[] }) => void) => void;
         on?: (cb: (data: { topic: string; accountIds: string[] }) => void) => void;
       };
       sendTransaction: (
@@ -27,12 +26,23 @@ declare global {
   }
 }
 
+const STORAGE_KEY = 'ml_hashpack_pairing_v2';
+
 export class HashPackConnector {
   private topic: string | null = null;
   private accountId: string | null = null;
 
   static isAvailable(): boolean {
-    return typeof window !== 'undefined' && Boolean(window.hashpack);
+    return typeof window !== 'undefined' && typeof window.hashpack !== 'undefined' && window.hashpack !== null;
+  }
+
+  static clearStoredPairing() {
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem('ml_hashpack_pairing'); // legacy
+    } catch {
+      /* ignore */
+    }
   }
 
   async connect(): Promise<string> {
@@ -40,13 +50,16 @@ export class HashPackConnector {
       throw new Error('HashPack requires a browser');
     }
 
-    // Wait briefly for extension injection (can lag behind page load)
-    if (!HashPackConnector.isAvailable()) {
-      await new Promise((r) => setTimeout(r, 400));
+    // Poll up to ~2s for extension inject
+    for (let i = 0; i < 8; i++) {
+      if (HashPackConnector.isAvailable()) break;
+      await new Promise((r) => setTimeout(r, 250));
     }
+
     if (!HashPackConnector.isAvailable()) {
+      HashPackConnector.clearStoredPairing();
       throw new Error(
-        'HashPack extension not detected. Install HashPack from https://www.hashpack.app/, unlock it, then refresh this page.',
+        'HashPack extension not found in this browser. Install from https://www.hashpack.app/ (Chrome/Brave/Firefox), unlock it, reload MediLedger, then connect again.',
       );
     }
 
@@ -70,32 +83,44 @@ export class HashPackConnector {
       throw new Error(`HashPack init failed: ${msg}`);
     }
 
-    hp.connectToLocalWallet(initData.pairingString);
+    if (!initData?.pairingString) {
+      throw new Error('HashPack did not return a pairing string');
+    }
+
+    try {
+      hp.connectToLocalWallet(initData.pairingString);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      throw new Error(`Could not open HashPack pairing UI: ${msg}`);
+    }
 
     return new Promise((resolve, reject) => {
-      const timer = setTimeout(
-        () =>
-          reject(
-            new Error(
-              'HashPack connection timed out. Open the HashPack extension and approve the pairing request.',
-            ),
+      const timer = setTimeout(() => {
+        reject(
+          new Error(
+            'HashPack pairing timed out (90s). Open the HashPack extension popup and approve the connection.',
           ),
-        90_000,
-      );
+        );
+      }, 90_000);
 
       const onPair = (data: { topic: string; accountIds: string[] }) => {
         clearTimeout(timer);
         if (!data?.accountIds?.length) {
-          reject(new Error('HashPack returned no account IDs'));
+          reject(new Error('HashPack returned no accounts — create/import an account in HashPack first'));
           return;
         }
         this.topic = data.topic;
         this.accountId = data.accountIds[0];
-        // Persist pairing for reloads
         try {
           localStorage.setItem(
-            'ml_hashpack_pairing',
-            JSON.stringify({ topic: data.topic, accountId: data.accountIds[0], network }),
+            STORAGE_KEY,
+            JSON.stringify({
+              topic: data.topic,
+              accountId: data.accountIds[0],
+              network,
+              at: Date.now(),
+              source: 'hashpack-extension',
+            }),
           );
         } catch {
           /* ignore */
@@ -109,13 +134,14 @@ export class HashPackConnector {
         hp.pairingEvent.on(onPair);
       } else {
         clearTimeout(timer);
-        reject(new Error('HashPack pairingEvent API missing — update your HashPack extension'));
+        reject(new Error('HashPack API outdated — update the HashPack extension'));
       }
     });
   }
 
   async signMessage(message: string): Promise<string> {
     if (!this.topic || !this.accountId) throw new Error('HashPack not connected');
+    if (!HashPackConnector.isAvailable()) throw new Error('HashPack extension missing');
     const resp = await window.hashpack!.sendTransaction(this.topic, {
       topic: this.topic,
       byteArray: new TextEncoder().encode(message),
@@ -133,10 +159,6 @@ export class HashPackConnector {
     }
     this.topic = null;
     this.accountId = null;
-    try {
-      localStorage.removeItem('ml_hashpack_pairing');
-    } catch {
-      /* ignore */
-    }
+    HashPackConnector.clearStoredPairing();
   }
 }

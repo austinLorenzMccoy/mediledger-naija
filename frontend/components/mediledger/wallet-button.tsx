@@ -35,10 +35,15 @@ export function WalletButton({ wallet, onOpen, onDisconnect, compact = false }: 
         {showMenu && (
           <div className="fade-in absolute right-0 top-[calc(100%+8px)] z-[200] min-w-[220px] overflow-hidden rounded-[10px] border border-border-color bg-ink">
             <div className="border-b border-border-color px-4 py-3.5">
-              <div className="mb-1 text-[11px] text-text-muted">Connected via HashPack</div>
+              <div className="mb-1 text-[11px] text-text-muted">
+                {wallet.isDemo || wallet.provider === "mock"
+                  ? "Demo wallet (not HashPack)"
+                  : `Connected via ${wallet.provider ?? "wallet"}`}
+              </div>
               <div className="font-mono text-xs text-mint">{wallet.accountId}</div>
               <div className="mt-0.5 text-[11px] text-text-muted">
                 {wallet.balance} HBAR &middot; {wallet.network || "testnet"}
+                {wallet.isDemo ? " · DEMO" : ""}
               </div>
             </div>
             <div className="p-2">

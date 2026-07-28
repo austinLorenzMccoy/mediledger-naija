@@ -1,14 +1,19 @@
 /**
- * Wallet mode helpers.
+ * Wallet mode — production never uses the demo simulator.
  *
- * Production (Vercel / production builds) NEVER uses the demo mock wallet
- * unless NEXT_PUBLIC_ALLOW_MOCK_WALLET=true is set explicitly.
- *
- * Local dev: set NEXT_PUBLIC_WALLET_MODE=mock for demo without an extension.
+ * Demo only when BOTH:
+ *   NEXT_PUBLIC_WALLET_MODE=mock
+ *   NEXT_PUBLIC_ALLOW_MOCK_WALLET=true
+ * and build is NOT production/preview.
  */
 
 export function isProductionBuild(): boolean {
-  // NEXT_PUBLIC_VERCEL_ENV is inlined at build time on Vercel
+  if (typeof window !== 'undefined') {
+    const host = window.location.hostname;
+    if (host.endsWith('.vercel.app') || host === 'mediledger-nigeria.vercel.app') {
+      return true;
+    }
+  }
   const vercelEnv =
     process.env.NEXT_PUBLIC_VERCEL_ENV || process.env.VERCEL_ENV || '';
   if (vercelEnv === 'production' || vercelEnv === 'preview') return true;
@@ -16,17 +21,21 @@ export function isProductionBuild(): boolean {
   return false;
 }
 
-/** True only when demo/mock wallet is intentionally allowed. */
+/** Explicit opt-in for local demo wallet only. */
 export function isMockMode(): boolean {
-  if (process.env.NEXT_PUBLIC_ALLOW_MOCK_WALLET === 'true') {
-    return process.env.NEXT_PUBLIC_WALLET_MODE === 'mock';
-  }
-  // Hard-disable mock on production/preview deploys
+  // Absolute ban on hosted deploys
   if (isProductionBuild()) return false;
-  return process.env.NEXT_PUBLIC_WALLET_MODE === 'mock';
+  return (
+    process.env.NEXT_PUBLIC_ALLOW_MOCK_WALLET === 'true' &&
+    process.env.NEXT_PUBLIC_WALLET_MODE === 'mock'
+  );
 }
 
 export function walletNetworkLabel(): string {
   const n = process.env.NEXT_PUBLIC_HEDERA_NETWORK ?? 'testnet';
   return n === 'mainnet' ? 'Hedera Mainnet' : 'Hedera Testnet';
+}
+
+export function walletModeLabel(): string {
+  return isMockMode() ? 'demo' : 'live';
 }

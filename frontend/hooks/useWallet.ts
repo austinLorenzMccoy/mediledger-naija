@@ -4,7 +4,7 @@ import { useCallback } from 'react';
 import { useWalletContext, WalletProvider } from '@/contexts/WalletContext';
 import { liveConnect } from '@/lib/mediledger';
 import { fetchHederaBalances } from '@/lib/wallet/balances';
-import { isMockMode } from '@/lib/wallet/mode';
+import { HashPackConnector } from '@/lib/wallet/hashpack';
 
 export function useWallet() {
   const { walletState, setWalletState } = useWalletContext();
@@ -14,48 +14,26 @@ export function useWallet() {
       setWalletState((s) => ({ ...s, status: 'connecting', error: null }));
 
       try {
+        if (provider === 'hashpack' && !HashPackConnector.isAvailable()) {
+          throw new Error(
+            'HashPack extension not installed in this browser. Install from hashpack.app, then refresh.',
+          );
+        }
+
         const account = await liveConnect(provider);
 
-        if (provider === 'mock' || isMockMode()) {
+        if (account.isDemo || account.provider === 'mock') {
           setWalletState({
             status: 'connected',
             accountId: account.accountId,
-            provider,
-            healBalance: parseFloat(account.balance) || 0,
-            hbarBalance: parseFloat(account.balance) || 0,
+            provider: 'mock',
+            healBalance: 0,
+            hbarBalance: 0,
             connector: null,
             error: null,
+            isDemo: true,
           });
           return;
-        }
-
-        // Optional: challenge-response if auth-service is up (non-blocking for UI connect)
-        try {
-          const challengeRes = await fetch('/api/v1/auth/wallet-challenge');
-          if (challengeRes.ok) {
-            const { challenge } = await challengeRes.json();
-            const verifyRes = await fetch('/api/v1/auth/wallet-verify', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                accountId: account.accountId,
-                challenge,
-                signature: '',
-              }),
-            });
-            if (verifyRes.ok) {
-              const { token } = await verifyRes.json();
-              if (token) {
-                const { supabase } = await import('@/lib/supabase');
-                await supabase.auth.setSession({
-                  access_token: token,
-                  refresh_token: '',
-                });
-              }
-            }
-          }
-        } catch {
-          /* wallet can connect without auth-service */
         }
 
         const balances = await fetchHederaBalances(account.accountId);
@@ -68,21 +46,23 @@ export function useWallet() {
           hbarBalance: balances.hbar,
           connector: null,
           error: null,
+          isDemo: false,
         });
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Connection failed';
-        setWalletState((s) => ({ ...s, status: 'disconnected', error: message }));
+        setWalletState((s) => ({
+          ...s,
+          status: 'disconnected',
+          error: message,
+          isDemo: false,
+        }));
       }
     },
     [setWalletState],
   );
 
   const disconnect = useCallback(async () => {
-    try {
-      localStorage.removeItem('ml_hashpack_pairing');
-    } catch {
-      /* ignore */
-    }
+    HashPackConnector.clearStoredPairing();
     try {
       const { supabase } = await import('@/lib/supabase');
       await supabase.auth.signOut();
@@ -97,18 +77,19 @@ export function useWallet() {
       hbarBalance: 0,
       connector: null,
       error: null,
+      isDemo: false,
     });
   }, [setWalletState]);
 
   const refreshBalances = useCallback(async () => {
-    if (!walletState.accountId) return;
+    if (!walletState.accountId || walletState.isDemo) return;
     const balances = await fetchHederaBalances(walletState.accountId);
     setWalletState((s) => ({
       ...s,
       healBalance: balances.heal,
       hbarBalance: balances.hbar,
     }));
-  }, [walletState.accountId, setWalletState]);
+  }, [walletState.accountId, walletState.isDemo, setWalletState]);
 
   return {
     ...walletState,

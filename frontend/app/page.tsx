@@ -12,10 +12,23 @@ export default function MediLedgerApp() {
   const [walletModalOpen, setWalletModalOpen] = useState(false)
 
   const handleConnected = (account: WalletAccount) => {
+    // Never accept a demo account labeled as HashPack
+    if (account.isDemo || account.provider === "mock") {
+      setWallet({ ...account, provider: "mock" })
+      return
+    }
     setWallet(account)
   }
 
-  const handleDisconnect = () => setWallet(null)
+  const handleDisconnect = () => {
+    try {
+      localStorage.removeItem("ml_hashpack_pairing")
+      localStorage.removeItem("ml_hashpack_pairing_v2")
+    } catch {
+      /* ignore */
+    }
+    setWallet(null)
+  }
 
   const sharedWalletProps = {
     wallet,

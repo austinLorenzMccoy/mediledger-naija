@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { isMockMode } from '@/lib/wallet/mode';
+import { HashPackConnector } from '@/lib/wallet/hashpack';
 
 export type WalletProvider = 'hashpack' | 'blade' | 'walletconnect' | 'mock';
 export type WalletStatus =
@@ -20,6 +20,7 @@ export interface WalletState {
   hbarBalance: number;
   connector: { signMessage?: (msg: string) => Promise<string>; disconnect?: () => void } | null;
   error: string | null;
+  isDemo: boolean;
 }
 
 const DEFAULT_STATE: WalletState = {
@@ -30,6 +31,7 @@ const DEFAULT_STATE: WalletState = {
   hbarBalance: 0,
   connector: null,
   error: null,
+  isDemo: false,
 };
 
 interface WalletContextValue {
@@ -45,25 +47,42 @@ export const WalletContext = createContext<WalletContextValue>({
 export function WalletProvider({ children }: { children: ReactNode }) {
   const [walletState, setWalletState] = useState<WalletState>(DEFAULT_STATE);
 
-  // Restore last HashPack pairing metadata (account id only) — does not fake balances
   useEffect(() => {
-    if (isMockMode()) return; // mock auto-connect is intentionally disabled on prod
+    // Never auto-restore a "connected" session without the real extension present.
+    // Clear legacy mock / stale pairings from older deploys.
+    if (!HashPackConnector.isAvailable()) {
+      HashPackConnector.clearStoredPairing();
+      return;
+    }
 
     try {
-      const raw = localStorage.getItem('ml_hashpack_pairing');
+      const raw =
+        localStorage.getItem('ml_hashpack_pairing_v2') ||
+        localStorage.getItem('ml_hashpack_pairing');
       if (!raw) return;
-      const parsed = JSON.parse(raw) as { accountId?: string; network?: string };
-      if (!parsed.accountId) return;
-
-      // Soft restore: show account as connected for UX; balances refresh on next connect/useWallet
+      const parsed = JSON.parse(raw) as {
+        accountId?: string;
+        source?: string;
+      };
+      // Ignore anything that was not from a real extension pair
+      if (parsed.source && parsed.source !== 'hashpack-extension') {
+        HashPackConnector.clearStoredPairing();
+        return;
+      }
+      if (!parsed.accountId || !/^0\.0\.\d+$/.test(parsed.accountId)) {
+        HashPackConnector.clearStoredPairing();
+        return;
+      }
+      // Soft restore only when extension is actually present
       setWalletState((s) => ({
         ...s,
         status: 'connected',
         accountId: parsed.accountId!,
         provider: 'hashpack',
+        isDemo: false,
       }));
     } catch {
-      /* ignore */
+      HashPackConnector.clearStoredPairing();
     }
   }, []);
 
