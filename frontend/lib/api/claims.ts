@@ -12,6 +12,13 @@ export const claimsApi = {
       .match(filters ?? {})
       .order('created_at', { ascending: false }),
 
+  listForPatient: (patientId: string) =>
+    supabase
+      .from('insurance_claims')
+      .select('*')
+      .eq('patient_id', patientId)
+      .order('created_at', { ascending: false }),
+
   // Get single claim
   get: (id: string) =>
     supabase.from('insurance_claims').select('*').eq('id', id).single(),

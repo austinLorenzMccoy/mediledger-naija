@@ -8,7 +8,9 @@ import { OverviewPage } from "@/components/mediledger/pages/overview"
 import { VaultPage } from "@/components/mediledger/pages/vault"
 import { TokensPage } from "@/components/mediledger/pages/tokens"
 import { SettingsPage } from "@/components/mediledger/pages/settings"
-import { PlaceholderPage } from "@/components/mediledger/pages/placeholder"
+import { ConsentPage } from "@/components/mediledger/pages/consent"
+import { AiPage } from "@/components/mediledger/pages/ai"
+import { EmergencyPage } from "@/components/mediledger/pages/emergency"
 import { NAV_ITEMS, SIDEBAR_OPEN, SIDEBAR_CLOSED, type NavItemId, type WalletAccount } from "@/lib/mediledger"
 import { useAuth } from "@/contexts/AuthContext"
 
@@ -65,29 +67,11 @@ export function Dashboard({ onGoHome, wallet, onOpenWallet, onDisconnectWallet }
           />
         )
       case "consent":
-        return (
-          <PlaceholderPage
-            title="Consent Hub"
-            icon="consent"
-            desc="Manage fine-grained permissions for who can access which parts of your health record, for how long, and at what price."
-          />
-        )
+        return <ConsentPage />
       case "ai":
-        return (
-          <PlaceholderPage
-            title="AI Health Guardian"
-            icon="ai"
-            desc="Federated learning engine analyzes encrypted records across partner hospitals to surface early disease detection insights."
-          />
-        )
+        return <AiPage />
       case "emergency":
-        return (
-          <PlaceholderPage
-            title="Emergency Protocol"
-            icon="emergency"
-            desc="Configure critical data tags (blood type, allergies, emergency contacts) that are instantly accessible to first responders via Hedera HCS."
-          />
-        )
+        return <EmergencyPage />
       default:
         return <OverviewPage />
     }
