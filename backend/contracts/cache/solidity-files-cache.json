@@ -113,8 +113,8 @@
       ]
     },
     "/Users/a/Documents/mediledgerNigeria/backend/contracts/src/VaultAwareConsentRegistry.sol": {
-      "lastModificationDate": 1780669459031,
-      "contentHash": "ea6976927fe8000db74eb09c2a19a940",
+      "lastModificationDate": 1785232353473,
+      "contentHash": "82fe59b4bb09967d6aec69cbbc396e1e",
       "sourceName": "src/VaultAwareConsentRegistry.sol",
       "solcConfig": {
         "version": "0.8.20",
@@ -153,8 +153,8 @@
       ]
     },
     "/Users/a/Documents/mediledgerNigeria/backend/contracts/src/VaultIntegrityVerifier.sol": {
-      "lastModificationDate": 1780669459031,
-      "contentHash": "c82b200ecf199d8b1180d37c004960cb",
+      "lastModificationDate": 1785232288181,
+      "contentHash": "20c99c74e482e43d7af2a66526dee6f2",
       "sourceName": "src/VaultIntegrityVerifier.sol",
       "solcConfig": {
         "version": "0.8.20",
@@ -183,7 +183,7 @@
       },
       "imports": [],
       "versionPragmas": [
-        "^0.8.20"
+        ">=0.7.0 <0.9.0"
       ],
       "artifacts": [
         "VaultIntegrityVerifier"

@@ -24,6 +24,8 @@ dependencies = [
     "redis==5.0.1",
     # ZK vault client (HTTP calls to zk-vault-service)
     "httpx>=0.27,<1.0",
+    # AES-256-GCM vault decrypt (optional at runtime if only JSON fixtures used)
+    "cryptography>=42.0.0",
     # Config
     "python-dotenv>=1.0.0",
 ]

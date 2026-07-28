@@ -61,15 +61,22 @@ for CIRCUIT in "${CIRCUITS[@]}"; do
 done
 
 # Generate Solidity verifier for VaultIntegrity (deployed to Hedera HSCS)
+# snarkjs names the contract Groth16Verifier — rewrite to VaultIntegrityVerifier
+# and place under contracts/src so Hardhat compiles it.
 echo ""
 echo "▶ Generating VaultIntegrityVerifier.sol..."
+TMP_VERIFIER="$(mktemp)"
 $SNARKJS zkey export solidityverifier \
   "keys/vault_integrity.zkey" \
-  "../contracts/VaultIntegrityVerifier.sol"
+  "$TMP_VERIFIER"
+sed 's/contract Groth16Verifier/contract VaultIntegrityVerifier/' \
+  "$TMP_VERIFIER" > "../contracts/src/VaultIntegrityVerifier.sol"
+rm -f "$TMP_VERIFIER"
+echo "  → contracts/src/VaultIntegrityVerifier.sol (contract VaultIntegrityVerifier)"
 
 echo ""
 echo "══════════════════════════════════════════════"
 echo " All circuits set up successfully."
 echo " Next: git lfs track '*.zkey' && git add keys/"
-echo " Then: npx hardhat run ../contracts/scripts/deploy-verifier.js --network hedera_testnet"
+echo " Then: npx hardhat compile && npx hardhat run scripts/deploy-verifier.js --network hedera_testnet"
 echo "══════════════════════════════════════════════"

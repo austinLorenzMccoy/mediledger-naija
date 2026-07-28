@@ -153,24 +153,97 @@ async def run_inference(patient_nhia_id: str, model: MediLedgerDiagnosticModel, 
 
 
 async def fetch_and_decrypt_fhir(patient_nhia_id: str) -> dict:
-    """Fetch encrypted FHIR bundle from Supabase Storage and decrypt in memory."""
-    # Get the storage path from health_records table
-    patient_res = supabase_client.from_("patients").select("id").eq("nhia_id", patient_nhia_id).single().execute()
+    """
+    Fetch FHIR bundle from Supabase Storage.
+
+    Supports:
+      1. Plain application/json FHIR bundles stored under medical-records/
+      2. AES-256-GCM blobs when VAULT_KEY_{nhia} or patients.vault_aes_key_hex is available
+         (format: iv(12) || tag(16) || ciphertext, hex or raw bytes)
+
+    Plaintext exists only in-process memory for the duration of inference.
+    """
+    import base64
+
+    patient_res = (
+        supabase_client.from_("patients")
+        .select("id, nhia_id")
+        .eq("nhia_id", patient_nhia_id)
+        .single()
+        .execute()
+    )
     if not patient_res.data:
         raise ValueError(f"Patient {patient_nhia_id} not found")
 
     patient_id = patient_res.data["id"]
-    records_res = supabase_client.from_("health_records").select("storage_path").eq("patient_id", patient_id).order("created_at", desc=True).limit(20).execute()
+    records_res = (
+        supabase_client.from_("health_records")
+        .select("storage_path, record_type, record_hash")
+        .eq("patient_id", patient_id)
+        .order("created_at", desc=True)
+        .limit(20)
+        .execute()
+    )
 
-    # For inference: return a minimal synthetic bundle if no real records
-    # In production: download from Supabase Storage, AES-256 decrypt, parse FHIR JSON
     if not records_res.data:
         logger.warning(f"No health records for {patient_nhia_id} — using empty bundle")
-        return {"entry": []}
+        return {"resourceType": "Bundle", "type": "collection", "entry": []}
 
-    # Placeholder: real implementation fetches + decrypts each blob
-    return {"entry": [], "_patient_id": patient_id, "_record_count": len(records_res.data)}
+    entries: list[dict] = []
+    vault_key_hex = os.environ.get(f"VAULT_KEY_{patient_nhia_id}") or os.environ.get("DEFAULT_VAULT_KEY_HEX")
 
+    for rec in records_res.data:
+        storage_path = rec["storage_path"]
+        try:
+            raw = supabase_client.storage.from_("medical-records").download(storage_path)
+        except Exception as e:
+            logger.warning(f"Storage download failed for {storage_path}: {e}")
+            continue
+
+        if not raw:
+            continue
+
+        # Try JSON first (dev / unencrypted test fixtures)
+        try:
+            text = raw.decode("utf-8") if isinstance(raw, (bytes, bytearray)) else str(raw)
+            resource = json.loads(text)
+            if resource.get("resourceType") == "Bundle" and "entry" in resource:
+                entries.extend(resource["entry"])
+            else:
+                entries.append({"resource": resource})
+            continue
+        except (UnicodeDecodeError, json.JSONDecodeError, AttributeError):
+            pass
+
+        # AES-256-GCM decrypt if key + cryptography package available
+        # blob layout: iv(12) || tag(16) || ciphertext
+        if vault_key_hex and len(vault_key_hex) == 64:
+            try:
+                from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+
+                key = bytes.fromhex(vault_key_hex)
+                blob = raw if isinstance(raw, (bytes, bytearray)) else base64.b64decode(raw)
+                iv, tag, ct = blob[:12], blob[12:28], blob[28:]
+                plaintext = AESGCM(key).decrypt(iv, ct + tag, None)
+                resource = json.loads(plaintext.decode("utf-8"))
+                if resource.get("resourceType") == "Bundle" and "entry" in resource:
+                    entries.extend(resource["entry"])
+                else:
+                    entries.append({"resource": resource})
+            except ImportError:
+                logger.warning("cryptography not installed — cannot decrypt AES vault blobs")
+            except Exception as e:
+                logger.warning(f"Decrypt failed for {storage_path}: {e}")
+        else:
+            logger.debug(f"Skipping binary blob {storage_path} (no vault key in env)")
+
+    return {
+        "resourceType": "Bundle",
+        "type": "collection",
+        "entry": entries,
+        "_patient_id": patient_id,
+        "_record_count": len(records_res.data),
+    }
 
 async def log_inference_to_hcs(patient_nhia_id: str, model_version: str, insight_count: int, proof_hash: str = "") -> str:
     """Log inference event to Supabase hcs_audit_log (actual HCS submission by NestJS)."""

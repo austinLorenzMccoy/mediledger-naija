@@ -2,19 +2,19 @@
 # NestJS + snarkjs — CPU-intensive Groth16 proof generation
 # Proof generation: ~800ms on 2 cores; verification: ~5ms
 
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 COPY . .
 RUN npm run build
 
-FROM node:20-alpine AS runtime
+FROM node:22-alpine AS runtime
 WORKDIR /app
 
 # snarkjs requires the wasm files at runtime — these come from the circuits setup
 # Mount the circuits/build and circuits/keys dirs via Docker volume (see docker-compose)
-RUN apk add --no-cache tini
+RUN apk add --no-cache tini wget
 
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules

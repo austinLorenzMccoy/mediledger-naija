@@ -1,20 +1,18 @@
-version: '3.9'
-
 # MediLedger Nigeria — Backend Services
 # NestJS microservices that complement Supabase (Hedera SDK + Redis workloads)
 # Supabase itself is run separately via: cd supabase/docker && docker compose up -d
 
 services:
 
-  # ── Redis (USSD sessions + emergency hot cache) ──────────────────────
+  # ── Redis (USSD sessions + emergency hot cache + ZK proof cache) ─────
+  # Host port 6380 avoids clashes with other local Redis on 6379
   redis:
     image: redis:7.2-alpine
     container_name: mediledger-redis
     ports:
-      - "6379:6379"
+      - "6380:6379"
     command: >
       redis-server
-      --requirepass ${REDIS_PASSWORD:-}
       --maxmemory 512mb
       --maxmemory-policy allkeys-lru
     volumes:
@@ -108,8 +106,13 @@ services:
     env_file: .env
     environment:
       - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=
       # circuits/keys and circuits/build are mounted so snarkjs can find .zkey + .wasm
       - CIRCUITS_DIR=/circuits
+      - SUPABASE_URL=${SUPABASE_URL:-}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY:-}
+      - INTERNAL_API_KEY=${INTERNAL_API_KEY}
     volumes:
       - ./circuits/keys:/circuits/keys:ro
       - ./circuits/build:/circuits/build:ro

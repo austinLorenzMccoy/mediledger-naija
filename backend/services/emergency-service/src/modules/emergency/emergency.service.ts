@@ -10,7 +10,17 @@ interface EmergencyProfile {
   date_of_birth: string;
   emergency_tag_active: boolean;
   cached_at: string;
+  /** Present when a pre-generated condition proof exists in zk-vault Redis. */
+  condition_proof?: {
+    conditionCode: number;
+    available: boolean;
+    proof?: unknown;
+    publicSignals?: string[];
+  };
 }
+
+// LOINC 882-1 blood type encoding used by condition_proof circuit
+const BLOOD_TYPE_CONDITION_CODE = 882;
 
 const CACHE_TTL_SECONDS = 3600; // 1 hour TTL — refreshed on patient profile updates
 const EMERGENCY_CACHE_PREFIX = 'emergency:';
@@ -49,17 +59,21 @@ export class EmergencyService {
     if (cached) {
       this.logger.log(`Cache HIT for emergency data: ${nhiaId}`);
       const profile = JSON.parse(cached) as EmergencyProfile;
-      this.triggerAccessAlert(nhiaId, providerId, hospitalName); // fire-and-forget
+      // Attach fresh condition proof pointer (Redis GET, non-blocking best-effort)
+      profile.condition_proof = await this.fetchConditionProof(nhiaId);
+      this.triggerAccessAlert(nhiaId, providerId, hospitalName);
       return profile;
     }
 
     // 2. Cache MISS — fallback to Supabase (still fast but > 300ms target)
     this.logger.warn(`Cache MISS for emergency data: ${nhiaId} — falling back to Supabase`);
     const profile = await this.fetchFromSupabase(nhiaId);
+    profile.condition_proof = await this.fetchConditionProof(nhiaId);
 
-    // Re-warm cache
+    // Re-warm cache (without proof object — proof fetched live from zk-vault)
+    const { condition_proof: _cp, ...cacheable } = profile;
     await this.redis
-      .setex(cacheKey, CACHE_TTL_SECONDS, JSON.stringify(profile))
+      .setex(cacheKey, CACHE_TTL_SECONDS, JSON.stringify(cacheable))
       .catch(() => {});
 
     this.triggerAccessAlert(nhiaId, providerId, hospitalName);
@@ -91,6 +105,41 @@ export class EmergencyService {
     }
 
     return { ...data, cached_at: new Date().toISOString() };
+  }
+
+  /**
+   * Pull pre-generated condition proof from zk-vault (Redis-backed).
+   * Must not throw or delay the emergency response path.
+   */
+  private async fetchConditionProof(
+    nhiaId: string,
+  ): Promise<EmergencyProfile['condition_proof']> {
+    const base = process.env.ZK_VAULT_SERVICE_URL ?? 'http://zk-vault-service:3012';
+    const key = process.env.INTERNAL_API_KEY ?? '';
+    try {
+      const res = await fetch(
+        `${base}/api/v1/zk/condition-proof/${encodeURIComponent(nhiaId)}/${BLOOD_TYPE_CONDITION_CODE}`,
+        {
+          headers: { 'x-internal-key': key },
+          signal: AbortSignal.timeout(50), // hard 50ms budget
+        },
+      );
+      if (res.status === 404) {
+        return { conditionCode: BLOOD_TYPE_CONDITION_CODE, available: false };
+      }
+      if (!res.ok) {
+        return { conditionCode: BLOOD_TYPE_CONDITION_CODE, available: false };
+      }
+      const body = await res.json();
+      return {
+        conditionCode: BLOOD_TYPE_CONDITION_CODE,
+        available: true,
+        proof: body.proof,
+        publicSignals: body.publicSignals,
+      };
+    } catch {
+      return { conditionCode: BLOOD_TYPE_CONDITION_CODE, available: false };
+    }
   }
 
   private triggerAccessAlert(nhiaId: string, providerId: string, hospitalName: string) {
