@@ -28,6 +28,10 @@ backend/circuits/*.ptau
 *.pt
 *.pkl
 
+# Confidential survey respondent data
+data_analysis/survey_raw.csv
+data_analysis/cleaned_survey_data.csv
+
 # OS
 .DS_Store
 Thumbs.db

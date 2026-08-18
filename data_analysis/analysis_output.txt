@@ -1,0 +1,328 @@
+Raw responses exported from KoboToolbox: 30
+Responses retained after cleaning: 30
+
+======================================================================
+SECTION A: DEMOGRAPHIC PROFILE OF RESPONDENTS
+======================================================================
+
+--- Professional Role (n=30) ---
+                    n     %
+Professional role
+Doctor             13  43.3
+Nurse               8  26.7
+Pharmacist          7  23.3
+Other               2   6.7
+
+--- Years of Experience (n=30) ---
+                      n     %
+Years of experience
+0‑5                  24  80.0
+6‑10                  5  16.7
+16+                   1   3.3
+
+--- Hospital Type (n=30) ---
+                        n     %
+Hospital type
+Private                11  36.7
+Other                   6  20.0
+Teaching Hospital       5  16.7
+Public                  5  16.7
+Primary Health Centre   3  10.0
+
+--- Geopolitical Zone (n=30) ---
+                                        n     %
+Hospital location (geopolitical zone)
+South‑West                             19  63.3
+South‑East                              5  16.7
+South‑South                             5  16.7
+North‑Central (including FCT Abuja)     1   3.3
+
+--- Hospital Size (n=28) ---
+                      n     %
+Hospital size
+Small <100 beds      20  71.4
+Large >300 beds       6  21.4
+Medium 100‑300 beds   2   7.1
+
+======================================================================
+SECTION B: CURRENT HEALTHCARE CHALLENGES
+======================================================================
+
+--- Counterfeit Drug Frequency (n=30) ---
+                                                     n     %
+How often do you encounter counterfeit or fake ...
+Sometimes                                           16  53.3
+Rarely                                              11  36.7
+Never                                                2   6.7
+Very often                                           1   3.3
+
+--- Claim Rejection (6mo) (n=30) ---
+                                                     n     %
+Have you experienced an insurance claim rejecti...
+No                                                  14  46.7
+Yes                                                 11  36.7
+Not applicable                                       5  16.7
+
+--- Record Fragmentation Severity (n=29) ---
+                                              n     %
+Rate severity of health record fragmentation
+Not severe                                    8  27.6
+Moderately severe                             7  24.1
+Slightly severe                               7  24.1
+Very severe                                   4  13.8
+Severe                                        3  10.3
+
+--- EMR Usage (n=30) ---
+                                                     n     %
+Does your hospital currently use electronic med...
+Partially mixed                                     11  36.7
+No completely paper                                 10  33.3
+Yes fully digital                                    9  30.0
+
+--- Drug Verification Satisfaction (n=30) ---
+                                                     n     %
+Satisfaction with current drug verification met...
+Neutral                                             14  46.7
+Satisfied                                            7  23.3
+Dissatisfied                                         5  16.7
+Very dissatisfied                                    4  13.3
+
+--- Biggest Hospital Challenge (n=30) ---
+                                     n     %
+Biggest challenge in your hospital
+Power                               10  33.3
+Staff resistance                     6  20.0
+Software                             4  13.3
+Other                                3  10.0
+Cost                                 2   6.7
+Training                             2   6.7
+Computers                            2   6.7
+Internet                             1   3.3
+
+--- Insurance Verification Time (n=30) ---
+                                               n     %
+Average time to verify insurance eligibility
+<1hr                                          13  43.3
+Not applicable                                 6  20.0
+1‑3 days                                       5  16.7
+1‑24hrs                                        5  16.7
+>3 days                                        1   3.3
+
+--- Witnessed Fraudulent Claims (n=30) ---
+                                                     n     %
+Have you witnessed or suspected fraudulent insu...
+No                                                  16  53.3
+Not sure                                             7  23.3
+Yes                                                  7  23.3
+
+--- Hours/week spent searching for patient records (n=27) ---
+Mean: 11.26 | Median: 5.00 | SD: 16.81 | Min: 0 | Max: 74
+
+======================================================================
+SECTION C: TECHNOLOGY AWARENESS AND READINESS
+======================================================================
+
+--- Blockchain Familiarity (n=29) ---
+                                         n     %
+Familiarity with blockchain technology
+No                                      14  48.3
+Somewhat                                 8  27.6
+Yes                                      6  20.7
+Yes Somewhat                             1   3.4
+
+--- Willingness to Use Blockchain Records (n=30) ---
+                                                    n     %
+Willingness to use blockchain‑based health records
+Moderately willing                                  9  30.0
+Willing                                             8  26.7
+Slightly willing                                    7  23.3
+Not willing at all                                  3  10.0
+Very willing                                        3  10.0
+
+--- Primary Concern (digital records) (n=30) ---
+                                               n     %
+Biggest concern about digital health records
+Privacy                                       11  36.7
+Security                                       5  16.7
+Cost                                           3  10.0
+Complexity                                     3  10.0
+Other                                          2   6.7
+Complexity Cost Security                       1   3.3
+Privacy Complexity Security                    1   3.3
+Cost Security                                  1   3.3
+Privacy Cost                                   1   3.3
+Privacy Complexity Cost Security               1   3.3
+Complexity Cost                                1   3.3
+
+--- Response to NHIA Mandate (n=30) ---
+                                                     n     %
+If NHIA mandated digital records, what would yo...
+Adopt immediately                                   16  53.3
+Adopt with concerns                                 11  36.7
+Not sure                                             2   6.7
+Resist                                               1   3.3
+
+--- IT Infrastructure Readiness (n=30) ---
+                                            n     %
+Rate hospital IT infrastructure readiness
+Not ready at all                           10  33.3
+Slightly ready                              8  26.7
+Moderately ready                            6  20.0
+Ready                                       4  13.3
+Fully ready                                 2   6.7
+
+--- Concerns about digital health records (multi-select, % selecting) ---
+Privacy     : 14/30 (46.7%)
+Complexity  : 7/30 (23.3%)
+Cost        : 8/30 (26.7%)
+Security    : 9/30 (30.0%)
+Other       : 2/30 (6.7%)
+
+======================================================================
+SECTION D: MEDILEDGER SOLUTION FEEDBACK
+======================================================================
+
+--- Patient-Controlled Records Improve Care (n=29) ---
+                                                    n     %
+Patient‑controlled records would improve health...
+Neutral                                             8  27.6
+Strongly agree                                      8  27.6
+Agree                                               7  24.1
+Disagree                                            5  17.2
+Strongly disagree                                   1   3.4
+
+--- QR Drug Verification Importance (n=29) ---
+                                               n     %
+Importance of drug verification via QR codes
+Very important                                13  44.8
+Important                                     10  34.5
+Moderately important                           5  17.2
+Not important at all                           1   3.4
+
+--- Automated Claims Reduce Fraud (n=29) ---
+                                                n     %
+Automated insurance claims would reduce fraud
+Neutral                                        11  37.9
+Agree                                           9  31.0
+Strongly agree                                  6  20.7
+Disagree                                        3  10.3
+
+--- Pilot Program Willingness (n=29) ---
+                                                n     %
+Willingness to participate in a pilot program
+Maybe                                          16  55.2
+Yes                                             8  27.6
+Not applicable                                  3  10.3
+No                                              2   6.9
+
+--- Token Incentive Willingness (n=29) ---
+                                                    n     %
+Importance of earning tokens for sharing anonym...
+Moderately willing                                  9  31.0
+Slightly willing                                    8  27.6
+Willing                                             5  17.2
+Very willing                                        5  17.2
+Not willing at all                                  2   6.9
+
+--- USSD Access Value (n=29) ---
+                                                     n     %
+USSD code for insurance verification would help...
+Agree                                               13  44.8
+Strongly agree                                      10  34.5
+Neutral                                              4  13.8
+Strongly disagree                                    1   3.4
+Disagree                                             1   3.4
+
+======================================================================
+RELIABILITY ANALYSIS — CRONBACH'S ALPHA
+======================================================================
+
+MediLedger Perceived Value Scale (5 items, n=29):
+Cronbach's alpha = 0.582  (95% CI: [0.281 0.781])
+
+Item-total correlations:
+patient_control     0.644
+qr_verification     0.564
+automated_claims    0.716
+token_incentive     0.461
+ussd_access         0.723
+dtype: float64
+
+======================================================================
+INFERENTIAL STATISTICS — CHI-SQUARE TESTS OF ASSOCIATION
+======================================================================
+
+Professional Role x Response to NHIA Mandate  (n=30)
+If NHIA mandated digital records, what would you do?  Adopt immediately  Adopt with concerns  Not sure  Resist
+Professional role
+Doctor                                                                7                    5         0       1
+Nurse                                                                 5                    1         2       0
+Other                                                                 1                    1         0       0
+Pharmacist                                                            3                    4         0       0
+Chi-square = 9.266, df = 9, p = 0.4131, Cramer's V = 0.321
+Note: 15/16 cells have expected count < 5 — interpret with caution given the small sample.
+
+Blockchain Familiarity x Willingness to Use Blockchain Records  (n=29)
+Willingness to use blockchain‑based health records  Moderately willing  Not willing at all  Slightly willing  Very willing  Willing
+Familiarity with blockchain technology
+No                                                                   4                   3                 5             1        1
+Somewhat                                                             3                   0                 1             1        3
+Yes                                                                  0                   0                 1             1        4
+Yes Somewhat                                                         1                   0                 0             0        0
+Chi-square = 15.180, df = 12, p = 0.2317, Cramer's V = 0.418
+Note: 20/20 cells have expected count < 5 — interpret with caution given the small sample.
+
+EMR Usage x IT Infrastructure Readiness  (n=30)
+Rate hospital IT infrastructure readiness           Fully ready  Moderately ready  Not ready at all  Ready  Slightly ready
+Does your hospital currently use electronic med...
+No completely paper                                           1                 1                 3      2               3
+Partially mixed                                               0                 3                 5      0               3
+Yes fully digital                                             1                 2                 2      2               2
+Chi-square = 5.274, df = 8, p = 0.7279, Cramer's V = 0.296
+Note: 15/15 cells have expected count < 5 — interpret with caution given the small sample.
+
+Hospital Type x Pilot Program Willingness  (n=29)
+Willingness to participate in a pilot program  Maybe  No  Not applicable  Yes
+Hospital type
+Other                                              6   0               0    0
+Primary Health Centre                              1   0               1    1
+Private                                            5   0               1    4
+Public                                             2   0               1    2
+Teaching Hospital                                  2   2               0    1
+Chi-square = 18.266, df = 12, p = 0.1079, Cramer's V = 0.458
+Note: 19/20 cells have expected count < 5 — interpret with caution given the small sample.
+
+Claim Rejection (6mo) x Witnessed Fraudulent Claims  (n=30)
+Have you witnessed or suspected fraudulent insurance claims?  No  Not sure  Yes
+Have you experienced an insurance claim rejecti...
+No                                                             9         5    0
+Not applicable                                                 2         2    1
+Yes                                                            5         0    6
+Chi-square = 12.574, df = 4, p = 0.0136, Cramer's V = 0.458
+Note: 7/9 cells have expected count < 5 — interpret with caution given the small sample.
+
+======================================================================
+CORRELATION ANALYSIS — SPEARMAN RANK CORRELATION
+======================================================================
+
+IT Infrastructure Readiness vs Willingness to Use Blockchain (n=30): rho = -0.571, p = 0.0010
+
+Record Fragmentation Severity vs Willingness to Use Blockchain (n=29): rho = 0.496, p = 0.0062
+
+IT Infrastructure Readiness vs Pilot Program Willingness (n=26): rho = -0.361, p = 0.0701
+
+Hours/Week Searching Records vs Record Fragmentation Severity (n=26): rho = 0.201, p = 0.3253
+
+======================================================================
+TRIANGULATION WITH SECONDARY DATA (NHIA 2025 / LITERATURE)
+======================================================================
+Would adopt digital records if NHIA mandated it (immediately or with concerns): 27/30 (90.0%)
+Report low IT infrastructure readiness (Not ready / Slightly ready): 18/30 (60.0%)
+
+Interpretation: attitudes toward digital/blockchain-based systems are broadly positive
+(most respondents would adopt if mandated), while infrastructure readiness lags behind.
+This mirrors Babalola et al. (2025), who found 98.6% positive EMR attitudes alongside
+90.8% citing insufficient computers — i.e., infrastructure, not attitude, is the binding constraint.
+
+
+Analysis complete. Cleaned dataset saved to cleaned_survey_data.csv
