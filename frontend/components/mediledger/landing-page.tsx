@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { Icon } from "@/components/mediledger/icon"
 import { WalletButton } from "@/components/mediledger/wallet-button"
-import type { WalletAccount } from "@/lib/mediledger"
+import { CORE_MODULES, type WalletAccount } from "@/lib/mediledger"
 import { useAuth } from "@/contexts/AuthContext"
 import toast from "react-hot-toast"
 
@@ -14,44 +14,11 @@ interface LandingPageProps {
   onDisconnectWallet: () => void
 }
 
-const FEATURES = [
-  {
-    icon: "lock",
-    title: "ZK Health Vaults",
-    desc: "Prove medical conditions without revealing records. AES-256 + zk-SNARKs keep your data mathematically secure.",
-    color: "#4EC99A",
-  },
-  {
-    icon: "token",
-    title: "Earn $HEAL Tokens",
-    desc: "Get paid in Hedera tokens when researchers access your anonymized data. Your records, your revenue.",
-    color: "#D4A843",
-  },
-  {
-    icon: "chart",
-    title: "AI Diagnostics",
-    desc: "Federated learning across 10,000+ patient records delivers early disease detection without data exposure.",
-    color: "#C9572A",
-  },
-  {
-    icon: "emergency",
-    title: "Emergency Protocol",
-    desc: "Critical data like blood type and allergies broadcast to nearby hospitals in under 300ms during emergencies.",
-    color: "#E8754A",
-  },
-  {
-    icon: "globe",
-    title: "HL7 FHIR Standard",
-    desc: "Interoperable with 190+ countries' health systems using global healthcare data standards.",
-    color: "#F0C96B",
-  },
-]
-
 const METRICS = [
-  { v: "200K+", l: "Patients Onboarded" },
-  { v: "\u20A62.1B", l: "Data Revenue Distributed" },
-  { v: "47", l: "Partner Hospitals" },
-  { v: "99.98%", l: "Uptime Guaranteed" },
+  { v: "<8ms", l: "Emergency retrieval" },
+  { v: "<1.2s", l: "ZK proof generation" },
+  { v: "<95ms", l: "AI inference" },
+  { v: "6", l: "Core modules live" },
 ]
 
 export function LandingPage({ onEnter, wallet, onOpenWallet, onDisconnectWallet }: LandingPageProps) {
@@ -217,7 +184,7 @@ export function LandingPage({ onEnter, wallet, onOpenWallet, onDisconnectWallet 
 
         {/* Metrics strip */}
         <div
-          className="fade-in mt-[72px] flex flex-wrap justify-center overflow-hidden rounded-xl border border-border-color"
+          className="fade-in mt-[72px] grid w-full max-w-[640px] grid-cols-2 overflow-hidden rounded-xl border border-border-color sm:flex sm:w-auto sm:max-w-none"
           style={{
             animationDelay: "0.6s",
             background: "rgba(13,43,31,0.72)",
@@ -226,11 +193,12 @@ export function LandingPage({ onEnter, wallet, onOpenWallet, onDisconnectWallet 
         >
           {METRICS.map((m, i) => (
             <div
-              key={i}
-              className="px-9 py-6 text-center"
-              style={{
-                borderRight: i < 3 ? "1px solid rgba(78,201,154,0.18)" : "none",
-              }}
+              key={m.l}
+              className={`px-5 py-5 text-center sm:px-9 sm:py-6 ${
+                i % 2 === 0 ? "border-r border-border-color" : ""
+              } ${i < 2 ? "border-b border-border-color sm:border-b-0" : ""} ${
+                i === 1 ? "sm:border-r sm:border-border-color" : ""
+              } ${i === 2 ? "sm:border-r sm:border-border-color" : ""}`}
             >
               <div className="font-serif text-[28px] font-bold text-gold">{m.v}</div>
               <div className="mt-1 text-xs tracking-wide text-text-muted">{m.l}</div>
@@ -248,14 +216,14 @@ export function LandingPage({ onEnter, wallet, onOpenWallet, onDisconnectWallet 
               <span className="text-terra">{"Africa\u2019s"}</span>
               {" Healthcare Future"}
             </h2>
-            <p className="mx-auto max-w-[500px] text-base text-text-muted">
-              Five pillars that protect your most sensitive data while unlocking its economic potential.
+            <p className="mx-auto max-w-[560px] text-base text-text-muted">
+              Six core modules that protect your records, speed up NHIA enrollment and claims, and keep hospitals in control of their own data.
             </p>
           </div>
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {FEATURES.map((f, i) => (
+            {CORE_MODULES.map((f) => (
               <div
-                key={i}
+                key={f.id}
                 className="card-hover rounded-xl border border-border-color p-7"
                 style={{
                   background: "rgba(13,43,31,0.72)",
@@ -292,7 +260,7 @@ export function LandingPage({ onEnter, wallet, onOpenWallet, onDisconnectWallet 
           Ready to own your health data?
         </h2>
         <p className="relative mb-9 text-text-muted">
-          Join 200,000+ Nigerians already on the ecosystem.
+          Enter the six-module prototype — Health Vault, Consent Hub, Enrollment, Claims, AI Guardian, and Emergency.
         </p>
         <button
           onClick={onEnter}
@@ -312,7 +280,7 @@ export function LandingPage({ onEnter, wallet, onOpenWallet, onDisconnectWallet 
           MediLedger<span className="text-terra">NG</span>
         </div>
         <div className="text-[13px] text-text-muted">
-          {"© 2025 MediLedger Nigeria. Built on Hedera. NDPR & HIPAA Compliant."}
+          {"© 2026 MediLedger Nigeria. Built on Hedera. NDPA 2023 & NHIA Act 2022."}
         </div>
         <div className="flex gap-5">
           {["Privacy", "Terms", "Docs", "GitHub"].map((l) => (

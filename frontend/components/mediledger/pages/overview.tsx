@@ -3,7 +3,7 @@
 import { Icon } from "@/components/mediledger/icon"
 import { usePatientBundle } from "@/hooks/usePatientBundle"
 import { formatRelative, vaultSealStatus } from "@/lib/api/patients"
-import type { WalletAccount } from "@/lib/mediledger"
+import { CORE_MODULES, type NavItemId, type WalletAccount } from "@/lib/mediledger"
 import { BUILD_ID, BUILD_NOTE } from "@/lib/build-info"
 
 interface StatCardProps {
@@ -53,10 +53,11 @@ function greeting() {
 
 interface OverviewPageProps {
   wallet?: WalletAccount | null
+  onNavigate?: (id: NavItemId) => void
 }
 
-export function OverviewPage({ wallet = null }: OverviewPageProps) {
-  const { patient, records, consents, tokenTxs, loading, error, user } = usePatientBundle()
+export function OverviewPage({ wallet = null, onNavigate }: OverviewPageProps) {
+  const { patient, records, consents, tokenTxs, claims, loading, error, user } = usePatientBundle()
   const seal = vaultSealStatus(patient)
 
   const activeConsents = consents.filter((c) => c.status === "active")
@@ -145,10 +146,43 @@ export function OverviewPage({ wallet = null }: OverviewPageProps) {
           label="Health Records"
           value={String(records.length)}
           sub={records[0] ? `Latest ${formatRelative(records[0].created_at)}` : "None yet"}
-          icon="ai"
+          icon="vault"
           color="#E8754A"
           delay={0.2}
         />
+      </div>
+
+      <div className="mb-8">
+        <h3 className="mb-3 font-serif text-base text-text-primary">Six core modules</h3>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          {CORE_MODULES.map((m) => (
+            <button
+              key={m.id}
+              type="button"
+              onClick={() => onNavigate?.(m.id)}
+              className="card-hover rounded-xl border border-border-color bg-forest-mid p-5 text-left"
+            >
+              <div className="mb-3 flex items-center gap-2.5">
+                <div
+                  className="flex h-8 w-8 items-center justify-center rounded-[8px]"
+                  style={{ background: `${m.color}22`, border: `1px solid ${m.color}44` }}
+                >
+                  <Icon name={m.icon} size={16} color={m.color} />
+                </div>
+                <span className="font-serif text-[15px] text-text-primary">{m.title}</span>
+              </div>
+              <p className="text-xs leading-relaxed text-text-muted">{m.desc}</p>
+              {m.id === "claims" && (
+                <p className="mt-2 font-mono text-[10px] text-mint">
+                  {claims.length} live claim{claims.length === 1 ? "" : "s"}
+                </p>
+              )}
+              {m.id === "enrollment" && patient && (
+                <p className="mt-2 font-mono text-[10px] text-mint">NHIA {patient.nhia_id}</p>
+              )}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">

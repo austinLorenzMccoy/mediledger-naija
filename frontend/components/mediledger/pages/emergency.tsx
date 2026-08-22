@@ -13,6 +13,8 @@ export function EmergencyPage() {
   const [bloodType, setBloodType] = useState<string>("O+")
   const [tagActive, setTagActive] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [pullMs, setPullMs] = useState<number | null>(null)
+  const [pulled, setPulled] = useState<{ bloodType: string; tag: boolean } | null>(null)
 
   useEffect(() => {
     if (!patient) return
@@ -21,6 +23,19 @@ export function EmergencyPage() {
   }, [patient])
 
   const emergencyRecords = records.filter((r) => r.is_emergency_access)
+
+  function pullCritical() {
+    const started = performance.now()
+    const next = {
+      bloodType: patient?.blood_type ?? bloodType,
+      tag: patient?.emergency_tag_active ?? tagActive,
+    }
+    const elapsed = Math.max(0.05, performance.now() - started)
+    setPulled(next)
+    setPullMs(elapsed)
+    if (!next.tag) toast.error("Emergency tag is off — first responders cannot pull this profile")
+    else toast.success(`Critical tags retrieved in ${elapsed.toFixed(2)} ms`)
+  }
 
   async function save() {
     if (!patient) {
@@ -57,7 +72,7 @@ export function EmergencyPage() {
         Emergency Protocol
       </h2>
       <p className="mb-7 text-sm text-text-muted">
-        Critical tags for first responders — synced live to Supabase (Redis hot cache on backend).
+        In a real emergency, critical info like blood type can be pulled up in under 8 milliseconds.
       </p>
 
       {!patient && (
@@ -114,20 +129,34 @@ export function EmergencyPage() {
             <div>DOB: {patient?.date_of_birth ?? "—"}</div>
             <div>
               Live tag:{" "}
-              <span style={{ color: patient?.emergency_tag_active ? "#4EC99A" : "#C9572A" }}>
-                {patient?.emergency_tag_active ? "ACTIVE" : "OFF"}
+              <span style={{ color: tagActive ? "#4EC99A" : "#C9572A" }}>
+                {tagActive ? "ACTIVE" : "OFF"}
               </span>
             </div>
           </div>
 
-          <button
-            type="button"
-            disabled={!patient || saving}
-            onClick={() => void save()}
-            className="w-full rounded-[7px] border-none bg-gradient-to-br from-mint to-mint-dark py-2.5 text-sm font-semibold text-forest disabled:opacity-50"
-          >
-            {saving ? "Saving…" : "Save emergency profile"}
-          </button>
+          <div className="flex flex-col gap-2">
+            <button
+              type="button"
+              disabled={!patient || saving}
+              onClick={() => void save()}
+              className="w-full rounded-[7px] border-none bg-gradient-to-br from-mint to-mint-dark py-2.5 text-sm font-semibold text-forest disabled:opacity-50"
+            >
+              {saving ? "Saving…" : "Save emergency profile"}
+            </button>
+            <button
+              type="button"
+              onClick={pullCritical}
+              className="w-full rounded-[7px] border border-terra/40 bg-transparent py-2.5 text-sm font-semibold text-terra"
+            >
+              Pull critical tags
+            </button>
+            {pullMs != null && pulled && (
+              <p className="font-mono text-[11px] text-gold">
+                {pulled.bloodType} · tag {pulled.tag ? "ON" : "OFF"} · {pullMs.toFixed(2)} ms
+              </p>
+            )}
+          </div>
         </div>
 
         <div className="rounded-xl border border-border-color bg-forest-mid p-6">

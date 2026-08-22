@@ -25,7 +25,7 @@ export function TokensPage() {
         $HEAL Token Dashboard
       </h2>
       <p className="mb-7 text-sm text-text-muted">
-        Earn tokens when researchers access your anonymized data.
+        Small rewards when you share for research through Consent Hub. Source of truth is Hedera Token Service.
       </p>
 
       {!patient && (

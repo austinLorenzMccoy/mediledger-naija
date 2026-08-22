@@ -9,6 +9,8 @@ import { VaultPage } from "@/components/mediledger/pages/vault"
 import { TokensPage } from "@/components/mediledger/pages/tokens"
 import { SettingsPage } from "@/components/mediledger/pages/settings"
 import { ConsentPage } from "@/components/mediledger/pages/consent"
+import { EnrollmentPage } from "@/components/mediledger/pages/enrollment"
+import { ClaimsPage } from "@/components/mediledger/pages/claims"
 import { AiPage } from "@/components/mediledger/pages/ai"
 import { EmergencyPage } from "@/components/mediledger/pages/emergency"
 import { NAV_ITEMS, SIDEBAR_OPEN, SIDEBAR_CLOSED, type NavItemId, type WalletAccount } from "@/lib/mediledger"
@@ -59,7 +61,7 @@ export function Dashboard({ onGoHome, wallet, onOpenWallet, onDisconnectWallet }
   const renderPage = () => {
     switch (active) {
       case "overview":
-        return <OverviewPage wallet={wallet} />
+        return <OverviewPage wallet={wallet} onNavigate={setActive} />
       case "vault":
         return <VaultPage />
       case "tokens":
@@ -74,12 +76,16 @@ export function Dashboard({ onGoHome, wallet, onOpenWallet, onDisconnectWallet }
         )
       case "consent":
         return <ConsentPage />
+      case "enrollment":
+        return <EnrollmentPage />
+      case "claims":
+        return <ClaimsPage />
       case "ai":
         return <AiPage />
       case "emergency":
         return <EmergencyPage />
       default:
-        return <OverviewPage wallet={wallet} />
+        return <OverviewPage wallet={wallet} onNavigate={setActive} />
     }
   }
 

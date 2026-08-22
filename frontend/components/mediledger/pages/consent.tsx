@@ -66,8 +66,9 @@ export function ConsentPage() {
             Consent Hub
           </h2>
           <p className="text-sm text-text-muted">
-            Live consent agreements for{" "}
-            {patient?.nhia_id ?? "your account"} — updates stream in realtime.
+            You decide who sees your data and for what. You can even earn small rewards
+            when you share for research
+            {patient?.nhia_id ? ` · ${patient.nhia_id}` : ""}.
           </p>
         </div>
         <button

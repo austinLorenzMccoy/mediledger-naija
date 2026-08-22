@@ -70,7 +70,7 @@ export function AiPage() {
             AI Health Guardian
           </h2>
           <p className="text-sm text-text-muted">
-            TabNet diagnostics over your vault — only after Groth16 proof verification.
+            Uses AI that learns from hospitals without taking raw patient data away from them. Inference only after the vault is ZK-sealed.
           </p>
         </div>
         <button

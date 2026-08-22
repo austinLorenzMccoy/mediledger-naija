@@ -15,6 +15,8 @@ export const NAV_ITEMS = [
   { id: 'overview', label: 'Overview', icon: 'home' },
   { id: 'vault', label: 'Health Vault', icon: 'vault' },
   { id: 'consent', label: 'Consent Hub', icon: 'consent' },
+  { id: 'enrollment', label: 'Enrollment', icon: 'shield' },
+  { id: 'claims', label: 'Claims', icon: 'claims' },
   { id: 'ai', label: 'AI Guardian', icon: 'ai' },
   { id: 'emergency', label: 'Emergency', icon: 'emergency' },
   { id: 'tokens', label: '$HEAL Tokens', icon: 'token' },
@@ -22,6 +24,58 @@ export const NAV_ITEMS = [
 ] as const;
 
 export type NavItemId = (typeof NAV_ITEMS)[number]['id'];
+
+/** The six thesis core modules — landing, overview, and nav share this copy. */
+export const CORE_MODULES = [
+  {
+    id: 'vault' as const,
+    icon: 'vault',
+    title: 'Health Vault',
+    desc: 'Stores your records safely, locked with special proofs so the data can be checked without being fully opened.',
+    color: '#4EC99A',
+  },
+  {
+    id: 'consent' as const,
+    icon: 'consent',
+    title: 'Consent Hub',
+    desc: 'You decide who sees your data and for what. You can even earn small rewards when you share for research.',
+    color: '#D4A843',
+  },
+  {
+    id: 'enrollment' as const,
+    icon: 'shield',
+    title: 'Enrollment Verifier',
+    desc: 'Checks NHIA status instantly, so no more weeks of waiting.',
+    color: '#2A8C68',
+  },
+  {
+    id: 'claims' as const,
+    icon: 'claims',
+    title: 'Claims Processor',
+    desc: 'Handles insurance claims automatically and openly, so less delay and less fraud.',
+    color: '#C9572A',
+  },
+  {
+    id: 'ai' as const,
+    icon: 'ai',
+    title: 'AI Health Guardian',
+    desc: 'Uses AI that learns from hospitals without taking raw patient data away from them.',
+    color: '#E8754A',
+  },
+  {
+    id: 'emergency' as const,
+    icon: 'emergency',
+    title: 'Emergency Protocol',
+    desc: 'In a real emergency, critical info like blood type can be pulled up in under 8 milliseconds.',
+    color: '#F0C96B',
+  },
+] satisfies ReadonlyArray<{
+  id: NavItemId;
+  icon: string;
+  title: string;
+  desc: string;
+  color: string;
+}>;
 
 export const SIDEBAR_OPEN = 240;
 export const SIDEBAR_CLOSED = 64;

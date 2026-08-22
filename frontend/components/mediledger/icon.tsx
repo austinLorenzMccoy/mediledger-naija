@@ -95,6 +95,13 @@ export function Icon({ name, size = 18, color = "currentColor" }: IconProps) {
         <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
       </svg>
     ),
+    claims: (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round">
+        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+        <polyline points="14,2 14,8 20,8" />
+        <path d="M9 15l2 2 4-4" />
+      </svg>
+    ),
     chart: (
       <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round">
         <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />

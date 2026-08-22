@@ -55,7 +55,7 @@ export function VaultPage() {
             Health Vault
           </h2>
           <p className="text-sm text-text-muted">
-            Encrypted FHIR records with Groth16 integrity proofs on Hedera.
+            Stores your records safely, locked with special proofs so the data can be checked without being fully opened.
           </p>
         </div>
         <button
